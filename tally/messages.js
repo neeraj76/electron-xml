@@ -1,25 +1,17 @@
-const create_export_request = (request) => {
-  const request_dec = {
-    REQUESTDESC: request
+const create_export_request = (header, body) => {
+  return {
+    'ENVELOPE': {
+      'HEADER': header,
+      'BODY': body
+    }
   }
+}
 
-  const body = {
-    EXPORTDATA: request_dec
-  }
-
+const get_accounts_list = () => {
   const header = {
     TALLYREQUEST: "Export Data"
   }
 
-  const envelope = {
-    'HEADER': header,
-    'BODY': body
-  }
-
-  return {'ENVELOPE': envelope}
-}
-
-const get_accounts_list = () => {
   const request = {
     REPORTNAME: "List of Accounts",
     STATICVARIABLES: {
@@ -28,9 +20,21 @@ const get_accounts_list = () => {
     }
   }
 
-  return create_export_request(request)
+  const request_dec = {
+    REQUESTDESC: request
+  }
+
+  const body = {
+    EXPORTDATA: request_dec
+  }
+
+
+  return create_export_request(header, body)
 }
 
+const get_trial_balance = () => {
+
+}
 module.exports = {
   get_accounts_request: get_accounts_list
 }
