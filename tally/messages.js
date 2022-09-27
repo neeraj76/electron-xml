@@ -11,21 +11,17 @@ const get_accounts_list = () => {
   const header = {
     TALLYREQUEST: "Export Data"
   }
-
-  const request = {
-    REPORTNAME: "List of Accounts",
-    STATICVARIABLES: {
-      SVEXPORTFORMAT: "$$SysName:XML",
-      ACCOUNTTYPE: "All Inventory Masters"
-    }
-  }
-
-  const request_dec = {
-    REQUESTDESC: request
-  }
-
+  
   const body = {
-    EXPORTDATA: request_dec
+    EXPORTDATA: {
+      REQUESTDESC: {
+        REPORTNAME: "List of Accounts",
+        STATICVARIABLES: {
+          SVEXPORTFORMAT: "$$SysName:XML",
+          ACCOUNTTYPE: "All Inventory Masters"
+        }
+      }
+    }
   }
 
 
