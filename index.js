@@ -22,7 +22,7 @@ app.on('ready', () => {
 
 ipcMain.on('screen:start', () => {
   const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
-  
+
   const sheets = processExcelFile(path);
 
   mainWindow.webContents.send('video:metadata', sheets.length);
