@@ -2,7 +2,7 @@ const electron = require('electron');
 const { processExcelFile } = require('./excel');
 const { app, BrowserWindow, ipcMain } = electron;
 const { initApi, getResource } = require('./services/api');
-const { get_accounts_request } = require('./tally/envelope');
+const { get_accounts_request } = require('./tally/messages');
 const { convertObjToXml, convertXmlToObj } = require("./xml");
 
 let mainWindow;
@@ -28,19 +28,15 @@ ipcMain.on('screen:start', () => {
   getResource(requestXmlStr, (accountsXmlStr) => {
     console.log(`getResource Response:\n${typeof accountsXmlStr}`)
     convertXmlToObj(accountsXmlStr, (err, accountsObj) => {
-      // console.log(`accountsObj=${JSON.stringify(accountsObj, null, 2)}`);
       console.log(`Header: ${JSON.stringify(accountsObj.ENVELOPE.HEADER, null, 2)}`)
 
       const messages = accountsObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
       messages.forEach(msg => {
-        console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
+        // console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
         if (Object.keys(msg).includes('VOUCHERTYPE')) {
-          console.log(`Voucher ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
+          console.log(`VoucherType: ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
         }
-      })
-
-
-      // console.log(`Extracted:${JSON.stringify(accountsObj.ENVELOPE.BODY[0].IMPORTDATA[0], null, 2)}`)
+      });
     });
 
   });
