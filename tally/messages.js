@@ -7,11 +7,11 @@ const create_export_request = (header, body) => {
   }
 }
 
-const get_accounts_list = () => {
+const get_accounts_list_request = () => {
   const header = {
     TALLYREQUEST: "Export Data"
   }
-  
+
   const body = {
     EXPORTDATA: {
       REQUESTDESC: {
@@ -28,9 +28,28 @@ const get_accounts_list = () => {
   return create_export_request(header, body)
 }
 
-const get_trial_balance = () => {
+const get_ledgers_list_request = () => {
+  const header = {
+    VERSION: 1,
+    TALLYREQUEST: "Export",
+    TYPE: "COLLECTION",
+    ID: "List of Ledgers"
+  }
 
+  const body = {
+    EXPORTDATA: {
+      DESC: {
+        STATICVARIABLES: {
+          SVEXPORTFORMAT: "$$SysName:XML"
+        }
+      }
+    }
+  }
+  
+  return create_export_request(header, body)
 }
+
 module.exports = {
-  get_accounts_request: get_accounts_list
+  get_accounts_list_request,
+  get_ledgers_list_request
 }

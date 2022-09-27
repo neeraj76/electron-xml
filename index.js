@@ -2,7 +2,7 @@ const electron = require('electron');
 const { processExcelFile } = require('./excel');
 const { app, BrowserWindow, ipcMain } = electron;
 const { initApi, getResource } = require('./services/api');
-const { get_accounts_request } = require('./tally/messages');
+const { get_accounts_list_request, get_ledgers_list_request} = require('./tally/messages');
 const { convertObjToXml, convertXmlToObj } = require("./xml");
 
 let mainWindow;
@@ -19,15 +19,19 @@ app.on('ready', () => {
 });
 
 
-
-ipcMain.on('screen:start', () => {
-  const accountsRequest = get_accounts_request();
-  const requestXmlStr = convertObjToXml(accountsRequest);
+const tally_process_request = (request, callback) => {
+  const requestXmlStr = convertObjToXml(request);
   console.log(`Accounts Request:\n${requestXmlStr}`)
 
-  getResource(requestXmlStr, (accountsXmlStr) => {
-    console.log(`getResource Response:\n${typeof accountsXmlStr}`)
-    convertXmlToObj(accountsXmlStr, (err, accountsObj) => {
+  getResource(requestXmlStr, callback);
+}
+
+
+ipcMain.on('screen:start', () => {
+
+  tally_process_request(get_accounts_list_request(), (responseXmlStr) => {
+    console.log(`getResource Response:\n${typeof responseXmlStr}`)
+    convertXmlToObj(responseXmlStr, (err, accountsObj) => {
       console.log(`Header: ${JSON.stringify(accountsObj.ENVELOPE.HEADER, null, 2)}`)
 
       const messages = accountsObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
@@ -38,8 +42,11 @@ ipcMain.on('screen:start', () => {
         }
       });
     });
-
   });
+
+  tally_process_request(get_ledgers_list_request(), (responseXmlStr) => {
+    console.log(`Response:\n${responseXmlStr}`);
+  })
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
 

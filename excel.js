@@ -1,6 +1,5 @@
 const XLSX = require("xlsx");
 const { getXml } = require('./xml');
-const { get_accounts_request } = require('./tally/messages');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
