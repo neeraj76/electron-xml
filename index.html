@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>VideoInfo</h1>
+    <form>
+        <div>
+            <label>Select a new video</label>
+            <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+        </div>
+        <button type="submit">Get Info</button>
+    </form>
+    <h1 id="result"></h1>
+
+    <script>
+        const electron = require('electron');
+        const { ipcRenderer } = electron;
+
+        document.querySelector('form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const { path } = document.querySelector('input').files[0];
+
+            ipcRenderer.send('video:submit', path);
+        });
+
+        ipcRenderer.on('video:metadata', (err, duration) => {
+            document.querySelector('#result').innerHTML = `Excel document has  ${duration} sheets`;
+        });
+
+        ipcRenderer.send('screen:start');
+    </script>
+</body>
+</html>
