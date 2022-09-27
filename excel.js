@@ -1,5 +1,5 @@
 const XLSX = require("xlsx");
-const XML = require("xml2js");
+const { getXmlBuilder } = require('./xml');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
@@ -15,10 +15,11 @@ const processExcelFile = (path) => {
 
   console.log(`path=${path}`)
 
-  const builder = new XML.Builder({headless: true, renderOpts: { pretty: true }});
+  const xmlBuilder = getXmlBuilder();
+
   processWorkbook(workbook, (rows) => {
     rows.forEach(row => {
-      const xml = builder.buildObject(row);
+      const xml = xmlBuilder.buildObject(row);
       console.log(xml);
     })
   });

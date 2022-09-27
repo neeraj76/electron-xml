@@ -1,6 +1,4 @@
 const electron = require('electron');
-const XLSX = require('xlsx');
-const XML = require('xml2js');
 const { processExcelFile } = require('./excel');
 
 const { app, BrowserWindow, ipcMain } = electron;
