@@ -1,5 +1,6 @@
 const XLSX = require("xlsx");
-const { getXmlBuilder } = require('./xml');
+const { getXml } = require('./xml');
+const { get_accounts_request } = require('./tally/envelope');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
@@ -15,11 +16,9 @@ const processExcelFile = (path) => {
 
   console.log(`path=${path}`)
 
-  const xmlBuilder = getXmlBuilder();
-
   processWorkbook(workbook, (rows) => {
     rows.forEach(row => {
-      const xml = xmlBuilder.buildObject(row);
+      const xml = getXml(row);
       console.log(xml);
     })
   });

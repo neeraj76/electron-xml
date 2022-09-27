@@ -1,7 +1,9 @@
 const electron = require('electron');
 const { processExcelFile } = require('./excel');
-
 const { app, BrowserWindow, ipcMain } = electron;
+const { initApi, getResource } = require('./services/api');
+const { get_accounts_request } = require('./tally/envelope');
+const { convertObjToXml, convertXmlToObj } = require("./xml");
 
 let mainWindow;
 
@@ -19,11 +21,35 @@ app.on('ready', () => {
 
 
 ipcMain.on('screen:start', () => {
-  const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
+  const accountsRequest = get_accounts_request();
+  const requestXmlStr = convertObjToXml(accountsRequest);
+  console.log(`Accounts Request:\n${requestXmlStr}`)
 
-  const sheets = processExcelFile(path);
+  getResource(requestXmlStr, (accountsXmlStr) => {
+    console.log(`getResource Response:\n${typeof accountsXmlStr}`)
+    convertXmlToObj(accountsXmlStr, (err, accountsObj) => {
+      // console.log(`accountsObj=${JSON.stringify(accountsObj, null, 2)}`);
+      console.log(`Header: ${JSON.stringify(accountsObj.ENVELOPE.HEADER, null, 2)}`)
 
-  mainWindow.webContents.send('video:metadata', sheets.length);
+      const messages = accountsObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
+      messages.forEach(msg => {
+        console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
+        if (Object.keys(msg).includes('VOUCHERTYPE')) {
+          console.log(`Voucher ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
+        }
+      })
+
+
+      // console.log(`Extracted:${JSON.stringify(accountsObj.ENVELOPE.BODY[0].IMPORTDATA[0], null, 2)}`)
+    });
+
+  });
+
+  // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
+
+  // const sheets = processExcelFile(path);
+
+  // mainWindow.webContents.send('video:metadata', sheets.length);
 });
 
 ipcMain.on('video:submit', (event, path) => {

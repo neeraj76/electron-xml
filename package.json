@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.27.2",
     "electron": "^20.2.0",
     "fluent-ffmpeg": "^2.1.2",
     "xlsx": "^0.18.5",
