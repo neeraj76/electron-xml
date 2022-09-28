@@ -244,6 +244,70 @@ const create_voucher_request = (date, voucher_type, debit_ledger, credit_ledger,
 
 }
 
+
+const create_unit_name_request = (unit_name) => {
+  const header = {
+    ...get_version_1_import_header(),
+    TYPE: "Data",
+    ID: "All Masters"
+  }
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: {
+        IMPORTDUPS: "@@DUPCOMBINE"
+      }
+    },
+    DATA: {
+      TALLYMESSAGE: {
+        UNIT: {
+          '$': {
+            NAME: unit_name,
+            Action: 'Create'
+          },
+          NAME: unit_name,
+          ISSIMPLEUNIT: "Yes",
+          FORPAYROLL: "No"
+        }
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
+
+const create_stock_group_request = (stock_group_name, parent_stock_group_name) => {
+  const header = {
+    ...get_version_1_import_header(),
+    TYPE: "Data",
+    ID: "All Masters"
+  }
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: {
+        IMPORTDUPS: "@@DUPCOMBINE"
+      }
+    },
+    DATA: {
+      TALLYMESSAGE: {
+        STOCKGROUP: {
+          '$': {
+            NAME: stock_group_name,
+            Action: 'Create'
+          },
+          NAME: stock_group_name,
+          PARENT: parent_stock_group_name
+        }
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
+
 module.exports = {
   get_accounts_list_request,
   get_ledgers_list_request,
@@ -253,5 +317,7 @@ module.exports = {
   get_day_book_request,
   create_ledger_request,
   create_ledger_group_request,
-  create_voucher_request
+  create_voucher_request,
+  create_unit_name_request,
+  create_stock_group_request
 }
