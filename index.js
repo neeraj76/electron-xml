@@ -136,37 +136,39 @@ function show_trial_balance() {
   });
 }
 
+const indentationLen = 2
+const propNameLen = 40;
+
 const traverse = (object, object_index, indent) => {
   if (Object.keys(object).includes('$')) {
     const voucher_attributes = object['$'];
-    console.log(`Object ${object_index}`);
+    console.log(`${' '.repeat(indent)} Object ${object_index}`);
 
     Object.keys(voucher_attributes).forEach(attr => {
-      console.log(`${attr.padStart(15)}: ${voucher_attributes[attr]}`);
+      console.log(`${' '.repeat(indent)} ${attr.padStart(15)}: ${voucher_attributes[attr]}`);
     });
   }
 
   Object.keys(object).forEach((prop, p_index) => {
     const value = object[prop];
-    const indentationLen = 2
-    const propNameLen = 40;
+
     if (value != "" && value != "No" && value != "0") {
       if (Array.isArray(value)) {
         if (value.length == 1) {
           if (typeof value[0] === 'string' && value[0].replace(/ /g, '').length > 0) {
-            console.log(`${p_index} Array[${value.length}]: ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
+            console.log(`${' '.repeat(indent)} ${p_index} Array[${value.length}]: ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
           }
         } else if (value.length > 1) {
           value.forEach((obj, obj_index) => {
             if (typeof obj === 'object') {
-              console.log(`${p_index} Array[${Object.keys(obj).length}]: ${prop.padStart(propNameLen)}`);
+              console.log(`${' '.repeat(indent)} ${p_index} Array[${Object.keys(obj).length}]: ${prop.padStart(propNameLen)}`);
             }
 
             traverse(obj, obj_index, indent+indentationLen);
           })
         }
       } else {
-        console.log(`${p_index}        ${prop.padStart(propNameLen)}: ${value}`);
+        console.log(`${' '.repeat(indent)} ${p_index}        ${prop.padStart(propNameLen)}: ${value}`);
       }
     }
   });
