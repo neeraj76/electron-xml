@@ -136,7 +136,7 @@ function show_trial_balance() {
   });
 }
 
-const traverse = (object, object_index) => {
+const traverse = (object, object_index, indent) => {
   if (Object.keys(object).includes('$')) {
     const voucher_attributes = object['$'];
     console.log(`Object ${object_index}`);
@@ -148,6 +148,7 @@ const traverse = (object, object_index) => {
 
   Object.keys(object).forEach((prop, p_index) => {
     const value = object[prop];
+    const indentationLen = 2
     const propNameLen = 40;
     if (value != "" && value != "No" && value != "0") {
       if (Array.isArray(value)) {
@@ -161,9 +162,8 @@ const traverse = (object, object_index) => {
               console.log(`${p_index} Array[${Object.keys(obj).length}]: ${prop.padStart(propNameLen)}`);
             }
 
-            traverse(obj, obj_index);
+            traverse(obj, obj_index, indent+indentationLen);
           })
-          // value.slice(0,1).forEach(traverse);
         }
       } else {
         console.log(`${p_index}        ${prop.padStart(propNameLen)}: ${value}`);
@@ -181,9 +181,9 @@ function show_day_book() {
     convertXmlToObj(responseXmlStr, (err, responseObj) => {
       const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
 
-      messages.slice(0,1).forEach((msg, m_index) => {
+      messages.slice(0,8).forEach((msg, m_index) => {
         const voucher = msg.VOUCHER[0];
-        traverse(voucher, m_index);
+        traverse(voucher, m_index, 0);
       })
     });
   });
