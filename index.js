@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain } = electron;
 const { initApi, getResource } = require('./services/api');
 const { get_accounts_list_request, get_ledgers_list_request, get_balance_sheet_request, get_profit_loss_request,
   get_trial_balance_request, get_day_book_request, create_ledger_request, create_ledger_group_request,
-  create_voucher_request, create_stock_group_request, create_unit_name_request
+  create_voucher_request, create_stock_group_request, create_unit_name_request, create_stock_item_request
 } = require('./tally/messages');
 const { convertObjToXml, convertXmlToObj } = require("./xml");
 
@@ -267,6 +267,15 @@ function handle_create_stock_group(stock_group_name, parent_stock_group_name) {
   });
 }
 
+function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_name,
+                                  open_position_type, open_position_quantity, open_position_amount) {
+  const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
+      open_position_type, open_position_quantity, open_position_amount);
+  tally_process_request(createStockItemRequest, (responseXmlStr) => {
+    parseXml(responseXmlStr);
+  });
+}
+
 ipcMain.on('screen:start', () => {
   // show_accounts();
   // show_ledgers();
@@ -278,10 +287,11 @@ ipcMain.on('screen:start', () => {
   // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
   // handle_create_ledger_group();
   // handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+  // handle_create_unit_name("Num")
   // handle_create_stock_group("Securities", "");
   // handle_create_stock_group("Equities", "Securities");
   // handle_create_stock_group("Derivatives", "Securities");
-  handle_create_unit_name("Num")
+  handle_create_stock_item("RELIANCE", "Equities", "No.")
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
   //
