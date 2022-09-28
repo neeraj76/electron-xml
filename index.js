@@ -158,9 +158,9 @@ const traverse = (object, object_index, indent) => {
         if (value.length == 1) {
           if (typeof value[0] === 'string' && value[0].replace(/ /g, '').length > 0) {
             if (flagShowArray) {
-              console.log(`${' '.repeat(indent)} ${p_index} Array[${value.length}]: ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
+              console.log(`${' '.repeat(indent)} ${p_index} Array[${value.length}]: ${prop.padStart(propNameLen)}:  ${value[0]}`);
             } else {
-              console.log(`${' '.repeat(indent)} ${p_index} ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
+              console.log(`${' '.repeat(indent)} ${p_index} ${prop.padStart(propNameLen)}:  ${value[0]}`);
             }
           }
         } else if (value.length > 1) {
