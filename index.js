@@ -136,8 +136,9 @@ function show_trial_balance() {
   });
 }
 
-const indentationLen = 2
-const propNameLen = 40;
+const flagShowArray = false;
+const indentationLen = 4;
+const propNameLen = 30;
 
 const traverse = (object, object_index, indent) => {
   if (Object.keys(object).includes('$')) {
@@ -156,12 +157,20 @@ const traverse = (object, object_index, indent) => {
       if (Array.isArray(value)) {
         if (value.length == 1) {
           if (typeof value[0] === 'string' && value[0].replace(/ /g, '').length > 0) {
-            console.log(`${' '.repeat(indent)} ${p_index} Array[${value.length}]: ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
+            if (flagShowArray) {
+              console.log(`${' '.repeat(indent)} ${p_index} Array[${value.length}]: ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
+            } else {
+              console.log(`${' '.repeat(indent)} ${p_index} ${prop.padStart(propNameLen)}:  ${value[0].replace(/ /g, "*")}`);
+            }
           }
         } else if (value.length > 1) {
           value.forEach((obj, obj_index) => {
             if (typeof obj === 'object') {
-              console.log(`${' '.repeat(indent)} ${p_index} Array[${Object.keys(obj).length}]: ${prop.padStart(propNameLen)}`);
+              if (flagShowArray) {
+                console.log(`${' '.repeat(indent)} ${p_index} Array[${Object.keys(obj).length}]: ${prop.padStart(propNameLen)}`);
+              } else {
+                console.log(`${' '.repeat(indent)} ${p_index} : ${prop.padStart(propNameLen)}`);
+              }
             }
 
             traverse(obj, obj_index, indent+indentationLen);
