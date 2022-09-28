@@ -3,7 +3,8 @@ const { processExcelFile } = require('./excel');
 const { app, BrowserWindow, ipcMain } = electron;
 const { initApi, getResource } = require('./services/api');
 const { get_accounts_list_request, get_ledgers_list_request, get_balance_sheet_request, get_profit_loss_request,
-  get_trial_balance_request, get_day_book_request
+  get_trial_balance_request, get_day_book_request, create_ledger_request, create_ledger_group_request,
+  create_voucher_request
 } = require('./tally/messages');
 const { convertObjToXml, convertXmlToObj } = require("./xml");
 
@@ -200,13 +201,64 @@ function show_day_book() {
   });
 }
 
+function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amount) {
+  const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
+  tally_process_request(createLedgersRequest, (responseXmlStr) => {
+    console.log(`Response:\n${responseXmlStr}`);
+    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+      const data = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+      console.log(`Keys: ${Object.keys(data)}`);
+      traverse(data, 0);
+
+      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+      console.log(`Keys: ${Object.keys(desc)}`);
+      traverse(desc, 0);
+    });
+  });
+}
+
+function handle_create_ledger_group(ledger_group_name, parent_ledger_group_name) {
+  const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
+  tally_process_request(createLedgersRequest, (responseXmlStr) => {
+    console.log(`Response:\n${responseXmlStr}`);
+    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+      const data = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+      console.log(`Keys: ${Object.keys(data)}`);
+      traverse(data, 0);
+
+      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+      console.log(`Keys: ${Object.keys(desc)}`);
+      traverse(desc, 0);
+    });
+  });
+}
+
+function handle_create_voucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
+  const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
+  tally_process_request(createVoucherRequest, (responseXmlStr) => {
+    console.log(`Response:\n${responseXmlStr}`);
+    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+      // In case of error DESC comes inside DATA
+      const data = responseObj.ENVELOPE.BODY[0].DATA[0];
+      console.log(`Keys: ${Object.keys(data)}`);
+      traverse(data, 0);
+
+    });
+  });
+}
+
 ipcMain.on('screen:start', () => {
   // show_accounts();
   // show_ledgers();
   // show_balance_sheet();
   // show_profit_loss();
   // show_trial_balance();
-  show_day_book();
+  // show_day_book();
+  // handle_create_ledger('Bank of India', 'Bank Accounts', 0);
+  // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
+  // handle_create_ledger_group();
+  handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
   //
