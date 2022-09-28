@@ -78,8 +78,65 @@ const get_balance_sheet_request = () => {
   return create_export_request(header, body)
 }
 
+const get_profit_loss_request = () => {
+  const header = get_export_data_header();
+
+  const body = {
+    EXPORTDATA: {
+      REQUESTDESC: {
+        STATICVARIABLES: {
+          ...get_static_variables(),
+          SVFROMDATE: "20220401",
+          SVTODATE: "20230331"
+        },
+        REPORTNAME: "Profit and Loss"
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
+
+const get_trial_balance_request = () => {
+  const header = get_export_data_header();
+
+  const body = {
+    EXPORTDATA: {
+      REQUESTDESC: {
+        STATICVARIABLES: get_static_variables(),
+        REPORTNAME: "Trial Balance"
+      }
+    }
+  }
+  return create_export_request(header, body)
+}
+
+const get_day_book_request = () => {
+  const header = get_export_data_header();
+
+  const body = {
+    EXPORTDATA: {
+      REQUESTDESC: {
+        STATICVARIABLES: {
+          ...get_static_variables(),
+          SVFROMDATE: "20220401",
+          SVTODATE: "20230331"
+        },
+        REPORTNAME: "Voucher Register"
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
+
 module.exports = {
   get_accounts_list_request,
   get_ledgers_list_request,
-  get_balance_sheet_request
+  get_balance_sheet_request,
+  get_profit_loss_request,
+  get_trial_balance_request,
+  get_day_book_request
 }

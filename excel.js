@@ -1,5 +1,5 @@
 const XLSX = require("xlsx");
-const { getXml } = require('./xml');
+const { convertObjToXml } = require('./xml');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
@@ -17,7 +17,7 @@ const processExcelFile = (path) => {
 
   processWorkbook(workbook, (rows) => {
     rows.forEach(row => {
-      const xml = getXml(row);
+      const xml = convertObjToXml(row);
       console.log(xml);
     })
   });
