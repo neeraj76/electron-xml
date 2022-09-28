@@ -7,17 +7,34 @@ const create_export_request = (header, body) => {
   }
 }
 
-const get_accounts_list_request = () => {
-  const header = {
+const get_export_data_header = () => {
+  return {
     TALLYREQUEST: "Export Data"
   }
+}
+
+const get_version_1_header = () => {
+  return {
+    VERSION: 1,
+    TALLYREQUEST: "Export",
+  }
+}
+
+const get_static_variables = () => {
+  return {
+    SVEXPORTFORMAT: "$$SysName:XML"
+  }
+}
+
+const get_accounts_list_request = () => {
+  const header = get_export_data_header();
 
   const body = {
     EXPORTDATA: {
       REQUESTDESC: {
         REPORTNAME: "List of Accounts",
         STATICVARIABLES: {
-          SVEXPORTFORMAT: "$$SysName:XML",
+          ...get_static_variables(),
           ACCOUNTTYPE: "All Inventory Masters"
         }
       }
@@ -30,8 +47,7 @@ const get_accounts_list_request = () => {
 
 const get_ledgers_list_request = () => {
   const header = {
-    VERSION: 1,
-    TALLYREQUEST: "Export",
+    ...get_version_1_header(),
     TYPE: "COLLECTION",
     ID: "List of Ledgers"
   }
@@ -39,17 +55,31 @@ const get_ledgers_list_request = () => {
   const body = {
     EXPORTDATA: {
       DESC: {
-        STATICVARIABLES: {
-          SVEXPORTFORMAT: "$$SysName:XML"
-        }
+        STATICVARIABLES: get_static_variables()
       }
     }
   }
-  
+
+  return create_export_request(header, body)
+}
+
+const get_balance_sheet_request = () => {
+  const header = get_export_data_header();
+
+  const body = {
+    EXPORTDATA: {
+      REQUESTDESC: {
+        STATICVARIABLES: get_static_variables(),
+        REPORTNAME: "Balance Sheet"
+      }
+    }
+  }
+
   return create_export_request(header, body)
 }
 
 module.exports = {
   get_accounts_list_request,
-  get_ledgers_list_request
+  get_ledgers_list_request,
+  get_balance_sheet_request
 }
