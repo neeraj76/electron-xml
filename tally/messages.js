@@ -315,6 +315,26 @@ const create_stock_item_request = (stockitem_name, parent_stock_group_name, unit
     ID: "All Masters"
   }
 
+  const stock_item = {
+    '$': {
+      NAME: stockitem_name,
+      Action: 'Create'
+    },
+    NAME: stockitem_name,
+    PARENT: parent_stock_group_name,
+    BASEUNITS:unit_name,
+    COSTINGMETHOD: "FIFO"
+  }
+
+  if (open_position_type != undefined) {
+    if (open_position_type === 'BUY' || open_position_type === 'B') {
+      open_position_amount *= -1;
+    }
+    stock_item.OPENINGBALANCE = `${open_position_quantity} ${unit_name}`;
+    stock_item.OPENINGVALUE = -open_position_amount;
+    stock_item.OPENINGRATE = `${-open_position_amount/open_position_quantity}/${unit_name}`;
+  }
+
   const body = {
     DESC: {
       STATICVARIABLES: {
@@ -323,16 +343,7 @@ const create_stock_item_request = (stockitem_name, parent_stock_group_name, unit
     },
     DATA: {
       TALLYMESSAGE: {
-        STOCKITEM: {
-          '$': {
-            NAME: stockitem_name,
-            Action: 'Create'
-          },
-          NAME: stockitem_name,
-          PARENT: parent_stock_group_name,
-          BASEUNITS:unit_name,
-          COSTINGMETHOD: "FIFO"
-        }
+        STOCKITEM: stock_item
       }
     }
   }
@@ -347,6 +358,7 @@ module.exports = {
   get_profit_loss_request,
   get_trial_balance_request,
   get_day_book_request,
+
   create_ledger_request,
   create_ledger_group_request,
   create_voucher_request,

@@ -137,6 +137,7 @@ function show_trial_balance() {
   });
 }
 
+const flagShowAll = false;
 const flagShowArray = false;
 const indentationLen = 4;
 const propNameLen = 30;
@@ -152,6 +153,9 @@ const traverse = (object, object_index, indent) => {
   }
 
   Object.keys(object).forEach((prop, p_index) => {
+    if (flagShowAll) {
+      console.log(`${prop}`)
+    }
     const value = object[prop];
 
     if (value != "" && value != "No" && value != "0") {
@@ -172,6 +176,8 @@ const traverse = (object, object_index, indent) => {
               } else {
                 console.log(`${' '.repeat(indent)} ${p_index} : ${prop.padStart(propNameLen)}`);
               }
+            } else {
+              console.log(`Leaf: ${JSON.stringify(obj)}`);
             }
 
             traverse(obj, obj_index, indent+indentationLen);
@@ -201,69 +207,52 @@ function show_day_book() {
   });
 }
 
-function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amount) {
-  const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
-  tally_process_request(createLedgersRequest, (responseXmlStr) => {
-    console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
-      const data = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
-      console.log(`Keys: ${Object.keys(data)}`);
-      traverse(data, 0);
+function parseResponseXml(responseXmlStr) {
+  convertXmlToObj(responseXmlStr, (err, responseObj) => {
+    // In case of error DESC comes inside DATA
+    const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+    traverse(result, 0);
 
-      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-      console.log(`Keys: ${Object.keys(desc)}`);
-      traverse(desc, 0);
-    });
+    const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+    traverse(desc, 0);
   });
 }
+
 
 function handle_create_ledger_group(ledger_group_name, parent_ledger_group_name) {
   const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
   tally_process_request(createLedgersRequest, (responseXmlStr) => {
-    console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
-      const data = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
-      console.log(`Keys: ${Object.keys(data)}`);
-      traverse(data, 0);
-
-      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-      console.log(`Keys: ${Object.keys(desc)}`);
-      traverse(desc, 0);
-    });
+    parseResponseXml(responseXmlStr)
   });
 }
 
-function parseXml(responseXmlStr) {
-  // console.log(`Response:\n${responseXmlStr}`);
-  convertXmlToObj(responseXmlStr, (err, responseObj) => {
-    // In case of error DESC comes inside DATA
-    const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
-    // console.log(`Keys: ${Object.keys(result)}`);
-    traverse(result, 0);
+function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amount) {
+  const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
+  tally_process_request(createLedgersRequest, (responseXmlStr) => {
+    parseResponseXml(responseXmlStr)
   });
 }
+
 
 function handle_create_voucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
   const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
   tally_process_request(createVoucherRequest, (responseXmlStr) => {
-    parseXml(responseXmlStr);
+    parseResponseXml(responseXmlStr);
   });
 }
-
-
 
 
 function handle_create_unit_name(unit_name) {
   const createUnitNameRequest = create_unit_name_request(unit_name)
   tally_process_request(createUnitNameRequest, (responseXmlStr) => {
-    parseXml(responseXmlStr);
+    parseResponseXml(responseXmlStr);
   });
 }
 
 function handle_create_stock_group(stock_group_name, parent_stock_group_name) {
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
   tally_process_request(createStockGroupRequest, (responseXmlStr) => {
-    parseXml(responseXmlStr);
+    parseResponseXml(responseXmlStr);
   });
 }
 
@@ -272,7 +261,7 @@ function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
   tally_process_request(createStockItemRequest, (responseXmlStr) => {
-    parseXml(responseXmlStr);
+    parseResponseXml(responseXmlStr);
   });
 }
 
@@ -283,15 +272,20 @@ ipcMain.on('screen:start', () => {
   // show_profit_loss();
   // show_trial_balance();
   // show_day_book();
+
+  handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
+  // handle_create_ledger_group("Laptop", "Computers and Accessories");
+
   // handle_create_ledger('Bank of India', 'Bank Accounts', 0);
   // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
-  // handle_create_ledger_group();
+
   // handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
   // handle_create_unit_name("Num")
   // handle_create_stock_group("Securities", "");
   // handle_create_stock_group("Equities", "Securities");
   // handle_create_stock_group("Derivatives", "Securities");
-  handle_create_stock_item("RELIANCE", "Equities", "No.")
+  // handle_create_stock_item("RELIANCE", "Equities", "No.",
+  //     "BUY", 100, 239500);
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
   //
