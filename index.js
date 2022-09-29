@@ -216,6 +216,7 @@ function show_day_book() {
 
 function parseResponseObj(responseObj, requestObj, reqIdStr) {
     const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+
     // traverse(result, 0);
     if (result.CREATED == 1) {
       console.log(`${reqIdStr}: Created Successfully`);
@@ -250,8 +251,9 @@ function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amo
 
 
 function handle_create_voucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
+  const reqIdStr = `Create Voucher: ${date} ${voucher_type} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`
   const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
-  tally_process_request(createVoucherRequest, parseResponseObj);
+  tally_process_request(createVoucherRequest, parseResponseObj, reqIdStr);
 }
 
 
@@ -280,13 +282,13 @@ ipcMain.on('screen:start', () => {
   // show_trial_balance();
   // show_day_book();
 
-  handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
+  // handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
   // handle_create_ledger_group("Laptop", "Computers and Accessories");
 
   handle_create_ledger('Bank of India', 'Bank Accounts', 0);
-  // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
+  handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
 
-  // handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+  handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
   // handle_create_unit_name("Num")
   // handle_create_stock_group("Securities", "");
   // handle_create_stock_group("Equities", "Securities");
