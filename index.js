@@ -79,10 +79,10 @@ function show_ledgers() {
   tally_process_request(ledgerListRequest, (responseObj) => {
       const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
       ledgers.forEach(ledger => {
-        console.log(`Keys:${Object.keys(ledger)}`);
-        console.log(`${ledger['$'].NAME}`)
+        // console.log(`Keys:${Object.keys(ledger)}`);
+        // console.log(`${ledger['$'].NAME}`)
         if (Object.keys(ledger.ISDELETED).length > 1) {
-          console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
+          // console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
         }
         const ledger_name = ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
         console.log(`${ledger_name}`);
@@ -152,10 +152,10 @@ function show_trial_balance() {
 }
 
 
-const traverse = (object, object_index, indent) => {
+const traverse = (object, object_index, indent, object_name) => {
   if (Object.keys(object).includes('$')) {
     const voucher_attributes = object['$'];
-    console.log(`${' '.repeat(indent)} Object ${object_index}`);
+    console.log(`${' '.repeat(indent)} ${object_name ? object_name : 'Object'} ${object_index}`);
 
     Object.keys(voucher_attributes).forEach(attr => {
       console.log(`${' '.repeat(indent)} ${attr.padStart(15)}: ${voucher_attributes[attr]}`);
@@ -209,7 +209,7 @@ function show_day_book() {
 
       messages.slice(0,8).forEach((msg, m_index) => {
         const voucher = msg.VOUCHER[0];
-        traverse(voucher, m_index, 0);
+        traverse(voucher, m_index, 0, "Voucher");
       })
   });
 }
@@ -283,7 +283,7 @@ ipcMain.on('screen:start', () => {
   // show_balance_sheet();
   // show_profit_loss();
   // show_trial_balance();
-  // show_day_book();
+  show_day_book();
 
   // handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
   // handle_create_ledger_group("Laptop", "Computers and Accessories");
@@ -292,12 +292,12 @@ ipcMain.on('screen:start', () => {
   // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
   //
   // handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
-  const unit_name = "Num";
-  handle_create_unit_name(unit_name)
-  handle_create_stock_group("Securities", "");
-  handle_create_stock_group("Equities", "Securities");
-  handle_create_stock_group("Derivatives", "Securities");
-  handle_create_stock_item("RELIANCE", "Equities", unit_name, "BUY", 100, 239500);
+  // const unit_name = "Num";
+  // handle_create_unit_name(unit_name)
+  // handle_create_stock_group("Securities", "");
+  // handle_create_stock_group("Equities", "Securities");
+  // handle_create_stock_group("Derivatives", "Securities");
+  // handle_create_stock_item("RELIANCE", "Equities", unit_name, "BUY", 100, 239500);
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
   //
