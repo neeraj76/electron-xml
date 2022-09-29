@@ -10,6 +10,16 @@ const { convertObjToXml, convertXmlToObj } = require("./xml");
 
 let mainWindow;
 
+
+const flagShowRequest = true;
+const flagShowResponse = true;
+const flagShowXml = false;
+const flagShowAll = false;
+const flagShowArray = false;
+const indentationLen = 4;
+const propNameLen = 30;
+
+
 app.on('ready', () => {
   // console.log('App is now ready');
   mainWindow = new BrowserWindow({
@@ -24,7 +34,9 @@ app.on('ready', () => {
 
 const tally_process_request = (request, callback) => {
   const requestXmlStr = convertObjToXml(request);
-  console.log(`Request:\n${requestXmlStr}`)
+  if (flagShowRequest && flagShowXml) {
+    console.log(`Request:\n${requestXmlStr}`)
+  }
 
   getResource(requestXmlStr, callback);
 }
@@ -137,10 +149,6 @@ function show_trial_balance() {
   });
 }
 
-const flagShowAll = false;
-const flagShowArray = false;
-const indentationLen = 4;
-const propNameLen = 30;
 
 const traverse = (object, object_index, indent) => {
   if (Object.keys(object).includes('$')) {
@@ -208,18 +216,37 @@ function show_day_book() {
 }
 
 function parseResponseXml(responseXmlStr) {
+  if (flagShowResponse && flagShowXml) {
+    console.log(`Response:\n${responseXmlStr}`);
+  }
+
   convertXmlToObj(responseXmlStr, (err, responseObj) => {
     // In case of error DESC comes inside DATA
-    const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
-    traverse(result, 0);
+    if (flagShowResponse) {
+      const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+      // traverse(result, 0);
+      if (result.CREATED == 1) {
+        console.log("Created Successfully");
+      } else if (result.ALTERED == 1) {
+        console.log("Modified Successfully");
+      } else if (result.DELETED == 1) {
+        console.log("Deleted Successfully");
+      } else {
+        traverse(result, 0);
+      }
+    }
+
 
     const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-    traverse(desc, 0);
+    // traverse(desc, 0);
   });
 }
 
 
 function handle_create_ledger_group(ledger_group_name, parent_ledger_group_name) {
+  if (flagShowRequest) {
+    console.log(`Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`)
+  }
   const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
   tally_process_request(createLedgersRequest, (responseXmlStr) => {
     parseResponseXml(responseXmlStr)
