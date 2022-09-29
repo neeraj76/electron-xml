@@ -11,8 +11,9 @@ const { convertObjToXml, convertXmlToObj } = require("./xml");
 let mainWindow;
 
 
-const flagShowRequest = true;
-const flagShowResponse = true;
+const flagShowRequest = false;
+const flagShowResponse = false;
+const flagShowDesc = false;
 const flagShowXml = false;
 const flagShowAll = false;
 const flagShowArray = false;
@@ -32,39 +33,50 @@ app.on('ready', () => {
 });
 
 
-const tally_process_request = (request, callback) => {
-  const requestXmlStr = convertObjToXml(request);
+const tally_process_request = (requestObj, callback, reqIdStr) => {
+  if (flagShowRequest) {
+    console.log(JSON.stringify(requestObj, null, 2));
+  }
+
+  const requestXmlStr = convertObjToXml(requestObj);
   if (flagShowRequest && flagShowXml) {
     console.log(`Request:\n${requestXmlStr}`)
   }
 
-  getResource(requestXmlStr, callback);
+  getResource(requestXmlStr, (responseXmlStr) => {
+    if (flagShowResponse && flagShowXml) {
+      console.log(`Response:\n${responseXmlStr}`);
+    }
+
+    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+      if (flagShowResponse) {
+        console.log(`Response:\n${JSON.stringify(responseObj, null, 2)}`);
+      }
+      callback(responseObj, requestObj, reqIdStr);
+    });
+  });
 }
 
 
 function show_accounts() {
   const accountListRequest = get_accounts_list_request();
-  tally_process_request(accountListRequest, (responseXmlStr) => {
-    console.log(`getResource Response:\n${typeof responseXmlStr}`)
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
-      console.log(`Header: ${JSON.stringify(responseObj.ENVELOPE.HEADER, null, 2)}`)
+  tally_process_request(accountListRequest, (responseObj) => {
+    console.log(`Header: ${JSON.stringify(responseObj.ENVELOPE.HEADER, null, 2)}`)
 
-      const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
-      messages.forEach(msg => {
-        // console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
-        if (Object.keys(msg).includes('VOUCHERTYPE')) {
-          console.log(`VoucherType: ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
-        }
-      });
+    const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
+    messages.forEach(msg => {
+      // console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
+      if (Object.keys(msg).includes('VOUCHERTYPE')) {
+        console.log(`VoucherType: ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
+      }
     });
   });
 }
 
 function show_ledgers() {
   const ledgerListRequest = get_ledgers_list_request();
-  tally_process_request(ledgerListRequest, (responseXmlStr) => {
-    console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+
+  tally_process_request(ledgerListRequest, (responseObj) => {
       const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
       ledgers.forEach(ledger => {
         console.log(`Keys:${Object.keys(ledger)}`);
@@ -75,7 +87,6 @@ function show_ledgers() {
         const ledger_name = ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
         console.log(`${ledger_name}`);
       });
-    });
 
     console.log(``)
   })
@@ -83,9 +94,7 @@ function show_ledgers() {
 
 function show_balance_sheet() {
   const balanceSheetRequest = get_balance_sheet_request();
-  tally_process_request(balanceSheetRequest, (responseXmlStr) => {
-    console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+  tally_process_request(balanceSheetRequest, (responseObj) => {
       const bsnames = responseObj.ENVELOPE.BSNAME;
       const bsamts = responseObj.ENVELOPE.BSAMT;
 
@@ -98,15 +107,12 @@ function show_balance_sheet() {
 
         console.log(`${i} ${JSON.stringify(bsAccName)}: ${bsMainAmt}`);
       })
-    });
   });
 }
 
 function show_profit_loss() {
   const profitLossRequest = get_profit_loss_request();
-  tally_process_request(profitLossRequest, (responseXmlStr) => {
-    console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+  tally_process_request(profitLossRequest, (responseObj) => {
       const dspNames = responseObj.ENVELOPE.DSPACCNAME;
       const plAmts = responseObj.ENVELOPE.PLAMT;
 
@@ -123,15 +129,12 @@ function show_profit_loss() {
 
         console.log(`${i} ${JSON.stringify(dspAccName)}: ${plAmount}`);
       })
-    });
   });
 }
 
 function show_trial_balance() {
   const trialBalanceRequest = get_trial_balance_request();
-  tally_process_request(trialBalanceRequest, (responseXmlStr) => {
-    console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+  tally_process_request(trialBalanceRequest, (responseObj) => {
       const dspAccNames = responseObj.ENVELOPE.DSPACCNAME;
       const dspAccInfos = responseObj.ENVELOPE.DSPACCINFO;
 
@@ -145,7 +148,6 @@ function show_trial_balance() {
 
         console.log(`${i} ${JSON.stringify(accName.padStart(30))}: '${accDebitAmount.padStart(10)}' '${accCreditAmount.padStart(10)}'`);
       })
-    });
   });
 }
 
@@ -202,94 +204,71 @@ const traverse = (object, object_index, indent) => {
 
 function show_day_book() {
   const dayBookRequest = get_day_book_request();
-  tally_process_request(dayBookRequest, (responseXmlStr) => {
-    // console.log(`Response:\n${responseXmlStr}`);
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
+  tally_process_request(dayBookRequest, (responseObj) => {
       const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
 
       messages.slice(0,8).forEach((msg, m_index) => {
         const voucher = msg.VOUCHER[0];
         traverse(voucher, m_index, 0);
       })
-    });
   });
 }
 
-function parseResponseXml(responseXmlStr) {
-  if (flagShowResponse && flagShowXml) {
-    console.log(`Response:\n${responseXmlStr}`);
-  }
-
-  convertXmlToObj(responseXmlStr, (err, responseObj) => {
-    // In case of error DESC comes inside DATA
-    if (flagShowResponse) {
-      const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
-      // traverse(result, 0);
-      if (result.CREATED == 1) {
-        console.log("Created Successfully");
-      } else if (result.ALTERED == 1) {
-        console.log("Modified Successfully");
-      } else if (result.DELETED == 1) {
-        console.log("Deleted Successfully");
-      } else {
-        traverse(result, 0);
-      }
+function parseResponseObj(responseObj, requestObj, reqIdStr) {
+    const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+    // traverse(result, 0);
+    if (result.CREATED == 1) {
+      console.log("Created Successfully");
+    } else if (result.ALTERED == 1) {
+      console.log("Modified Successfully");
+    } else if (result.DELETED == 1) {
+      console.log("Deleted Successfully");
+    } else {
+      traverse(result, 0);
     }
 
 
-    const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-    // traverse(desc, 0);
-  });
+    if (flagShowDesc) {
+      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+      traverse(desc, 0);
+    }
 }
 
 
 function handle_create_ledger_group(ledger_group_name, parent_ledger_group_name) {
-  if (flagShowRequest) {
-    console.log(`Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`)
-  }
+  const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
   const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
-  tally_process_request(createLedgersRequest, (responseXmlStr) => {
-    parseResponseXml(responseXmlStr)
-  });
+  tally_process_request(createLedgersRequest, parseResponseObj, reqIdStr);
 }
 
 function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amount) {
+  const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}] `
   const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
-  tally_process_request(createLedgersRequest, (responseXmlStr) => {
-    parseResponseXml(responseXmlStr)
-  });
+  tally_process_request( createLedgersRequest, parseResponseObj, reqIdStr);
 }
 
 
 function handle_create_voucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
   const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
-  tally_process_request(createVoucherRequest, (responseXmlStr) => {
-    parseResponseXml(responseXmlStr);
-  });
+  tally_process_request(createVoucherRequest, parseResponseObj);
 }
 
 
 function handle_create_unit_name(unit_name) {
   const createUnitNameRequest = create_unit_name_request(unit_name)
-  tally_process_request(createUnitNameRequest, (responseXmlStr) => {
-    parseResponseXml(responseXmlStr);
-  });
+  tally_process_request(createUnitNameRequest, parseResponseObj);
 }
 
 function handle_create_stock_group(stock_group_name, parent_stock_group_name) {
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
-  tally_process_request(createStockGroupRequest, (responseXmlStr) => {
-    parseResponseXml(responseXmlStr);
-  });
+  tally_process_request(createStockGroupRequest, parseResponseObj);
 }
 
 function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_name,
                                   open_position_type, open_position_quantity, open_position_amount) {
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
-  tally_process_request(createStockItemRequest, (responseXmlStr) => {
-    parseResponseXml(responseXmlStr);
-  });
+  tally_process_request(createStockItemRequest, parseResponseObj);
 }
 
 ipcMain.on('screen:start', () => {
@@ -303,7 +282,7 @@ ipcMain.on('screen:start', () => {
   handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
   // handle_create_ledger_group("Laptop", "Computers and Accessories");
 
-  // handle_create_ledger('Bank of India', 'Bank Accounts', 0);
+  handle_create_ledger('Bank of India', 'Bank Accounts', 0);
   // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
 
   // handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");

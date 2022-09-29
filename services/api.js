@@ -16,7 +16,7 @@ const getResource = (req, callback) => {
   axios.post('http://192.168.64.3:9000', req)
       .then(resp => {
         // console.log(resp.data);
-        callback(resp.data);
+        callback(resp.data, req);
       })
 }
 
