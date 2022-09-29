@@ -218,12 +218,13 @@ function parseResponseObj(responseObj, requestObj, reqIdStr) {
     const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
     // traverse(result, 0);
     if (result.CREATED == 1) {
-      console.log("Created Successfully");
+      console.log(`${reqIdStr}: Created Successfully`);
     } else if (result.ALTERED == 1) {
-      console.log("Modified Successfully");
+      console.log(`${reqIdStr}: Modified Successfully`);
     } else if (result.DELETED == 1) {
-      console.log("Deleted Successfully");
+      console.log(`${reqIdStr}: Deleted Successfully`);
     } else {
+      console.log(`${reqIdStr}: Repsonse traversed`)
       traverse(result, 0);
     }
 
