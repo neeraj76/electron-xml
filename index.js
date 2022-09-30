@@ -237,39 +237,39 @@ function parseResponseObj(responseObj, requestObj, reqIdStr) {
 }
 
 
-function handle_create_ledger_group(ledger_group_name, parent_ledger_group_name) {
+function handleCreateLedgerGroup(ledger_group_name, parent_ledger_group_name) {
   const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
   const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
   tallyProcessRequest(createLedgersRequest, parseResponseObj, reqIdStr);
 }
 
-function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amount) {
+function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amount) {
   const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}]`;
   const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
   tallyProcessRequest( createLedgersRequest, parseResponseObj, reqIdStr);
 }
 
 
-function handle_create_voucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
+function handleCreateVoucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
   const reqIdStr = `Create Voucher: ${date} ${voucher_type} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
   const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
   tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
 }
 
 
-function handle_create_unit_name(unit_name) {
+function handleCreateUnitName(unit_name) {
   const reqIdStr = `Create Unit: ${unit_name}`;
   const createUnitNameRequest = create_unit_name_request(unit_name)
   tallyProcessRequest(createUnitNameRequest, parseResponseObj, reqIdStr);
 }
 
-function handle_create_stock_group(stock_group_name, parent_stock_group_name) {
+function handleCreateStockGroup(stock_group_name, parent_stock_group_name) {
   const reqIdStr = `Create StockGroup: ${stock_group_name} [parent:${parent_stock_group_name}]`;
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
   tallyProcessRequest(createStockGroupRequest, parseResponseObj, reqIdStr);
 }
 
-function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_name,
+function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_name,
                                   open_position_type, open_position_quantity, open_position_amount) {
   const reqIdStr = `Create StockItem: ${stockitem_name} [parent:${parent_stock_group_name}] ${unit_name}}`;
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
@@ -278,28 +278,28 @@ function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_
 }
 
 ipcMain.on('screen:start', () => {
-  showAccounts();
-  showLedgers();
-  showBalanceSheet();
-  showProfitLoss();
-  showTrialBalance();
-  showDayBook();
+  // showAccounts();
+  // showLedgers();
+  // showBalanceSheet();
+  // showProfitLoss();
+  // showTrialBalance();
+  // showDayBook();
 
-  // handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
-  // handle_create_ledger_group("Laptop", "Computers and Accessories");
-  //
-  // handle_create_ledger('Bank of India', 'Bank Accounts', 0);
-  // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
-  //
-  // handle_create_voucher("20220401", "Payment", "Conveyance", "Bank of India", 9000, "Payment for Travel");
-  // handle_create_voucher("20220401", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+  handleCreateLedgerGroup("Computers and Accessories", "Indirect Expenses");
+  handleCreateLedgerGroup("Laptop", "Computers and Accessories");
 
-  // const unit_name = "Num";
-  // handle_create_unit_name(unit_name)
-  // handle_create_stock_group("Securities", "");
-  // handle_create_stock_group("Equities", "Securities");
-  // handle_create_stock_group("Derivatives", "Securities");
-  // handle_create_stock_item("RELIANCE", "Equities", unit_name, "BUY", 100, 239500);
+  handleCreateLedger('Bank of India', 'Bank Accounts', 0);
+  handleCreateLedger('Conveyance', 'Indirect Expenses', 0);
+
+  handleCreateVoucher("20220401", "Payment", "Conveyance", "Bank of India", 9000, "Payment for Travel");
+  handleCreateVoucher("20220401", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+
+  const unit_name = "Num";
+  handleCreateUnitName(unit_name)
+  handleCreateStockGroup("Securities", "");
+  handleCreateStockGroup("Equities", "Securities");
+  handleCreateStockGroup("Derivatives", "Securities");
+  handleCreateStockItem("RELIANCE", "Equities", unit_name, "BUY", 100, 239500);
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
   //
