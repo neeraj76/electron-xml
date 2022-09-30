@@ -33,7 +33,7 @@ app.on('ready', () => {
 });
 
 
-const tally_process_request = (requestObj, callback, reqIdStr) => {
+const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
   if (flagShowRequest) {
     console.log(JSON.stringify(requestObj, null, 2));
   }
@@ -58,9 +58,9 @@ const tally_process_request = (requestObj, callback, reqIdStr) => {
 }
 
 
-function show_accounts() {
+function showAccounts() {
   const accountListRequest = get_accounts_list_request();
-  tally_process_request(accountListRequest, (responseObj) => {
+  tallyProcessRequest(accountListRequest, (responseObj) => {
     console.log(`Header: ${JSON.stringify(responseObj.ENVELOPE.HEADER, null, 2)}`)
 
     const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
@@ -73,10 +73,10 @@ function show_accounts() {
   });
 }
 
-function show_ledgers() {
+function showLedgers() {
   const ledgerListRequest = get_ledgers_list_request();
 
-  tally_process_request(ledgerListRequest, (responseObj) => {
+  tallyProcessRequest(ledgerListRequest, (responseObj) => {
       const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
       ledgers.forEach(ledger => {
         // console.log(`Keys:${Object.keys(ledger)}`);
@@ -92,9 +92,9 @@ function show_ledgers() {
   })
 }
 
-function show_balance_sheet() {
+function showBalanceSheet() {
   const balanceSheetRequest = get_balance_sheet_request();
-  tally_process_request(balanceSheetRequest, (responseObj) => {
+  tallyProcessRequest(balanceSheetRequest, (responseObj) => {
       const bsnames = responseObj.ENVELOPE.BSNAME;
       const bsamts = responseObj.ENVELOPE.BSAMT;
 
@@ -110,9 +110,9 @@ function show_balance_sheet() {
   });
 }
 
-function show_profit_loss() {
+function showProfitLoss() {
   const profitLossRequest = get_profit_loss_request();
-  tally_process_request(profitLossRequest, (responseObj) => {
+  tallyProcessRequest(profitLossRequest, (responseObj) => {
       const dspNames = responseObj.ENVELOPE.DSPACCNAME;
       const plAmts = responseObj.ENVELOPE.PLAMT;
 
@@ -132,9 +132,9 @@ function show_profit_loss() {
   });
 }
 
-function show_trial_balance() {
+function showTrialBalance() {
   const trialBalanceRequest = get_trial_balance_request();
-  tally_process_request(trialBalanceRequest, (responseObj) => {
+  tallyProcessRequest(trialBalanceRequest, (responseObj) => {
       const dspAccNames = responseObj.ENVELOPE.DSPACCNAME;
       const dspAccInfos = responseObj.ENVELOPE.DSPACCINFO;
 
@@ -154,11 +154,11 @@ function show_trial_balance() {
 
 const traverse = (object, object_index, indent, object_name) => {
   if (Object.keys(object).includes('$')) {
-    const voucher_attributes = object['$'];
+    const object_attributes = object['$'];
     console.log(`${' '.repeat(indent)} ${object_name ? object_name : 'Object'} ${object_index}`);
 
-    Object.keys(voucher_attributes).forEach(attr => {
-      console.log(`${' '.repeat(indent)} ${attr.padStart(15)}: ${voucher_attributes[attr]}`);
+    Object.keys(object_attributes).forEach(attr => {
+      console.log(`${' '.repeat(indent)} ${attr.padStart(15)}: ${object_attributes[attr]}`);
     });
   }
 
@@ -202,9 +202,9 @@ const traverse = (object, object_index, indent, object_name) => {
   console.log('');
 };
 
-function show_day_book() {
+function showDayBook() {
   const dayBookRequest = get_day_book_request();
-  tally_process_request(dayBookRequest, (responseObj) => {
+  tallyProcessRequest(dayBookRequest, (responseObj) => {
       const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
 
       messages.slice(0,8).forEach((msg, m_index) => {
@@ -240,33 +240,33 @@ function parseResponseObj(responseObj, requestObj, reqIdStr) {
 function handle_create_ledger_group(ledger_group_name, parent_ledger_group_name) {
   const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
   const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
-  tally_process_request(createLedgersRequest, parseResponseObj, reqIdStr);
+  tallyProcessRequest(createLedgersRequest, parseResponseObj, reqIdStr);
 }
 
 function handle_create_ledger(ledger_name, parent_ledger_group_name, opening_amount) {
   const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}]`;
   const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
-  tally_process_request( createLedgersRequest, parseResponseObj, reqIdStr);
+  tallyProcessRequest( createLedgersRequest, parseResponseObj, reqIdStr);
 }
 
 
 function handle_create_voucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
   const reqIdStr = `Create Voucher: ${date} ${voucher_type} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
   const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
-  tally_process_request(createVoucherRequest, parseResponseObj, reqIdStr);
+  tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
 }
 
 
 function handle_create_unit_name(unit_name) {
   const reqIdStr = `Create Unit: ${unit_name}`;
   const createUnitNameRequest = create_unit_name_request(unit_name)
-  tally_process_request(createUnitNameRequest, parseResponseObj, reqIdStr);
+  tallyProcessRequest(createUnitNameRequest, parseResponseObj, reqIdStr);
 }
 
 function handle_create_stock_group(stock_group_name, parent_stock_group_name) {
   const reqIdStr = `Create StockGroup: ${stock_group_name} [parent:${parent_stock_group_name}]`;
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
-  tally_process_request(createStockGroupRequest, parseResponseObj, reqIdStr);
+  tallyProcessRequest(createStockGroupRequest, parseResponseObj, reqIdStr);
 }
 
 function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_name,
@@ -274,16 +274,16 @@ function handle_create_stock_item(stockitem_name, parent_stock_group_name, unit_
   const reqIdStr = `Create StockItem: ${stockitem_name} [parent:${parent_stock_group_name}] ${unit_name}}`;
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
-  tally_process_request(createStockItemRequest, parseResponseObj, reqIdStr);
+  tallyProcessRequest(createStockItemRequest, parseResponseObj, reqIdStr);
 }
 
 ipcMain.on('screen:start', () => {
-  // show_accounts();
-  // show_ledgers();
-  // show_balance_sheet();
-  // show_profit_loss();
-  // show_trial_balance();
-  show_day_book();
+  showAccounts();
+  showLedgers();
+  showBalanceSheet();
+  showProfitLoss();
+  showTrialBalance();
+  showDayBook();
 
   // handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
   // handle_create_ledger_group("Laptop", "Computers and Accessories");
