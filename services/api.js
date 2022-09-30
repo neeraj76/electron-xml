@@ -8,7 +8,7 @@ const initApi = (baseUrl) => {
   });
 }
 
-const getResource = (req, callback) => {
+const tallyApiCall = (req, callback) => {
   if (debugAxios) {
     console.log('getResource: Sending axios request');
   }
@@ -22,5 +22,5 @@ const getResource = (req, callback) => {
 
 module.exports = {
   initApi,
-  getResource
+  tallyApiCall
 }

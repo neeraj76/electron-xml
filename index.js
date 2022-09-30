@@ -1,7 +1,7 @@
 const electron = require('electron');
 const { processExcelFile } = require('./excel');
 const { app, BrowserWindow, ipcMain } = electron;
-const { initApi, getResource } = require('./services/api');
+const { initApi, tallyApiCall } = require('./services/api');
 const { get_accounts_list_request, get_ledgers_list_request, get_balance_sheet_request, get_profit_loss_request,
   get_trial_balance_request, get_day_book_request, create_ledger_request, create_ledger_group_request,
   create_voucher_request, create_stock_group_request, create_unit_name_request, create_stock_item_request
@@ -43,7 +43,7 @@ const tally_process_request = (requestObj, callback, reqIdStr) => {
     console.log(`Request:\n${requestXmlStr}`)
   }
 
-  getResource(requestXmlStr, (responseXmlStr) => {
+  tallyApiCall(requestXmlStr, (responseXmlStr) => {
     if (flagShowResponse && flagShowXml) {
       console.log(`Response:\n${responseXmlStr}`);
     }
@@ -287,11 +287,13 @@ ipcMain.on('screen:start', () => {
 
   // handle_create_ledger_group("Computers and Accessories", "Indirect Expenses");
   // handle_create_ledger_group("Laptop", "Computers and Accessories");
-
+  //
   // handle_create_ledger('Bank of India', 'Bank Accounts', 0);
   // handle_create_ledger('Conveyance', 'Indirect Expenses', 0);
   //
-  // handle_create_voucher("20220402", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+  // handle_create_voucher("20220401", "Payment", "Conveyance", "Bank of India", 9000, "Payment for Travel");
+  // handle_create_voucher("20220401", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+
   // const unit_name = "Num";
   // handle_create_unit_name(unit_name)
   // handle_create_stock_group("Securities", "");
