@@ -260,12 +260,12 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
 }
 
 function commandTester() {
-  showAccounts();
+  // showAccounts();
   // showLedgers();
   // showBalanceSheet();
   // showProfitLoss();
   // showTrialBalance();
-  // showDayBook();
+  showDayBook();
 
   // handleCreateLedgerGroup("Computers and Accessories", "Indirect Expenses");
   // handleCreateLedgerGroup("Laptop", "Computers and Accessories");

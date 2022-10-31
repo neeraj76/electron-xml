@@ -1,7 +1,6 @@
 const { tallyCommands, tallyCommandMap } = require('../tally/commands');
-const debugRow = true;
 
-
+const debugRow = false;
 
 const processRowTally = (row) => {
   if (debugRow) {

@@ -26,7 +26,7 @@ const handleSpreadsheet = (path) => {
 }
 
 ipcMain.on('screen:start', () => {
-  // commandTester();
+  commandTester();
 
   // const path = `/Users/neeraj/Desktop/tally_ledger.xlsx`;
   const path = `/Users/neeraj/Desktop/tally_voucher.xlsx`;
