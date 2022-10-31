@@ -1,3 +1,4 @@
+const {dateTallyFormat} = require("./tally_date");
 const create_export_request = (header, body) => {
   return {
     'ENVELOPE': {
@@ -204,15 +205,17 @@ const create_ledger_group_request = (ledger_group_name, parent_ledger_group_name
 
 
 
-const create_voucher_request = (date, voucher_type, debit_ledger, credit_ledger, amount, narration) => {
+const create_voucher_request = (voucher_type, date, debit_ledger, credit_ledger, amount, narration) => {
   const header = {
     ...get_version_1_import_header(),
     TYPE: "Data",
     ID: "Vouchers"
   }
 
+  const dateStr = dateTallyFormat(date);
+
   const voucher = {
-    DATE: date,
+    DATE: dateStr,
     NARRATION: narration,
     VOUCHERTYPENAME: voucher_type,
     VOUCHERNUMBER: 1
@@ -244,6 +247,48 @@ const create_voucher_request = (date, voucher_type, debit_ledger, credit_ledger,
 
 }
 
+
+const create_voucher_split_request = (voucher_type, date, debit_entries, credit_entries, narration) => {
+  const header = {
+    ...get_version_1_import_header(),
+    TYPE: "Data",
+    ID: "Vouchers"
+  }
+
+  const dateStr = dateTallyFormat(date);
+
+  const voucher = {
+    DATE: dateStr,
+    NARRATION: narration,
+    VOUCHERTYPENAME: voucher_type,
+    VOUCHERNUMBER: 1
+  };
+
+  voucher['ALLLEDGERENTRIES.LIST'] = [
+    {
+      LEDGERNAME: debit_ledger,
+      ISDEEMEDPOSITIVE: "Yes",
+      AMOUNT: -amount
+    },
+    {
+      LEDGERNAME: credit_ledger,
+      ISDEEMEDPOSITIVE: "No",
+      AMOUNT: amount
+    }
+  ]
+
+  const body = {
+    DESC: {},
+    DATA: {
+      TALLYMESSAGE: {
+        VOUCHER: [voucher]
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+
+}
 
 const create_unit_name_request = (unit_name) => {
   const header = {
@@ -362,6 +407,7 @@ module.exports = {
   create_ledger_request,
   create_ledger_group_request,
   create_voucher_request,
+  create_voucher_split_request,
   create_unit_name_request,
   create_stock_group_request,
   create_stock_item_request

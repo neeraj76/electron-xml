@@ -1,28 +1,37 @@
 const { tallyCommands, tallyCommandMap } = require('../tally/commands');
+const debugRow = true;
 
-const debugRow = false;
+
 
 const processRowTally = (row) => {
   if (debugRow) {
     console.log(`typeof(row)=${typeof row}`, row);
   }
 
-  if (!'Command' in Object.keys(row)) {
+  if (row.Command === undefined) {
     console.error("Key 'Command' not found in row");
-    return;
+    throw "error";
   }
+  const row_command = row.Command;
+  delete row.Command;
 
-  const command = row['Command'];
-  // console.log(`command=${command}`);
-  if (tallyCommands.includes(command)) {
-    // console.log(`Command ${command} is valid`);
+  let row_status = 'Active';
+  if (row.Status !== undefined) {
+    row_status = row.Status;
+    delete row.Status;
+  }
+  const row_active =  row_status !== 'Disabled' && row_status !== 'Inactive';
 
-    const values = Object.keys(row).map(key => row[key]);
-    // console.log(`values=${values}`);
-
-    tallyCommandMap[command].handler.apply(null, values.slice(1));
+  if (tallyCommands.includes(row_command)) {
+    if (row_active) {
+      const parameters = Object.keys(row).map(key => row[key]);
+      console.log(`parameters=${parameters}`)
+      tallyCommandMap[row_command].handler.apply(null, parameters);
+    } else {
+      console.log(`row ${row} disabled`);
+    }
   } else {
-    console.log(`Command ${command} is not valid`);
+    console.log(`Command ${row_command} is not valid`);
   }
 }
 

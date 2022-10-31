@@ -8,11 +8,14 @@ const {
   create_ledger_group_request,
   create_ledger_request,
   create_voucher_request,
+  create_voucher_split_request,
   create_unit_name_request,
   create_stock_group_request,
   create_stock_item_request
 } = require("./messages");
 const {tallyProcessRequest} = require("./request");
+const { ExcelDateToJSDate, dateTallyFormat } = require('../spreadsheet/excel_date');
+
 
 const flagShowDesc = false;
 const flagShowAll = false;
@@ -177,24 +180,34 @@ function showDayBook() {
 }
 
 function parseResponseObj(responseObj, requestObj, reqIdStr) {
-  const result = responseObj.ENVELOPE.BODY[0].DATA[0].IMPORTRESULT[0];
+  const data = responseObj.ENVELOPE.BODY[0].DATA[0]
+  const keys = Object.keys(data);
 
-  // traverse(result, 0);
-  if (result.CREATED == 1) {
-    console.log(`${reqIdStr}: Created Successfully`);
-  } else if (result.ALTERED == 1) {
-    console.log(`${reqIdStr}: Modified Successfully`);
-  } else if (result.DELETED == 1) {
-    console.log(`${reqIdStr}: Deleted Successfully`);
+  if (keys.includes('IMPORTRESULT')) {
+    const result = data.IMPORTRESULT[0];
+
+    // traverse(result, 0);
+    if (result.CREATED == 1) {
+      console.log(`${reqIdStr}: Created Successfully`);
+    } else if (result.ALTERED == 1) {
+      console.log(`${reqIdStr}: Modified Successfully`);
+    } else if (result.DELETED == 1) {
+      console.log(`${reqIdStr}: Deleted Successfully`);
+    } else {
+      console.log(`${reqIdStr}: Repsonse traversed`)
+      traverse(result, 0);
+    }
+
+
+    if (flagShowDesc) {
+      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+      traverse(desc, 0);
+    }
+  } else if (keys.includes('LINEERROR')) {
+    const error = data.LINEERROR[0];
+    console.error(`Error: ${error}`);
   } else {
-    console.log(`${reqIdStr}: Repsonse traversed`)
-    traverse(result, 0);
-  }
-
-
-  if (flagShowDesc) {
-    const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-    traverse(desc, 0);
+    throw "Tally Response to be supported"
   }
 }
 
@@ -212,12 +225,19 @@ function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amoun
 }
 
 
-function handleCreateVoucher(date, voucher_type, debit_ledger, credit_ledger, amount, narration) {
-  const reqIdStr = `Create Voucher: ${date} ${voucher_type} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
-  const createVoucherRequest = create_voucher_request(date, voucher_type, debit_ledger, credit_ledger, amount, narration);
+function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration) {
+  const date = ExcelDateToJSDate(excel_date);
+  const reqIdStr = `Create Voucher: ${voucher_type} ${date} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
+  const createVoucherRequest = create_voucher_request(voucher_type, date, debit_ledger, credit_ledger, amount, narration);
   tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
 }
 
+function handleCreateVoucherSplit(voucher_type, excel_date, debit_entries, credit_entries, narration) {
+  const date = ExcelDateToJSDate(excel_date);
+  const reqIdStr = `Create VoucherSplit: ${voucher_type} ${date} [DR:${debit_entries} CR:${credit_entries}]`;
+  const createVoucherRequest = create_voucher_split_request(voucher_type, date, debit_entries, credit_entries, narration);
+  tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
+}
 
 function handleCreateUnitName(unit_name) {
   const reqIdStr = `Create Unit: ${unit_name}`;
@@ -267,5 +287,7 @@ function commandTester() {
 module.exports = {
   commandTester,
   handleCreateLedgerGroup,
-  handleCreateLedger
+  handleCreateLedger,
+  handleCreateVoucher,
+  handleCreateVoucherSplit
 }
