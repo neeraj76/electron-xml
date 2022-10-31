@@ -21,9 +21,15 @@
 
         document.querySelector('form').addEventListener('submit', (event) => {
             event.preventDefault();
-            const { path } = document.querySelector('input').files[0];
+            const files = document.querySelector('input').files;
+            if (!files.length) {
+              console.error('No files are selected to upload');
+              return;
+            }
 
+            const {path} = document.querySelector('input').files[0];
             ipcRenderer.send('video:submit', path);
+
         });
 
         ipcRenderer.on('excel:metadata', (err, duration) => {

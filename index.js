@@ -6,7 +6,7 @@ const { get_accounts_list_request, get_ledgers_list_request, get_balance_sheet_r
   get_trial_balance_request, get_day_book_request, create_ledger_request, create_ledger_group_request,
   create_voucher_request, create_stock_group_request, create_unit_name_request, create_stock_item_request
 } = require('./tally/messages');
-const { convertObjToXml, convertXmlToObj } = require("./xml");
+const { convertObjToXml, convertXmlToObj } = require("./xml/convert");
 
 let mainWindow;
 
@@ -38,6 +38,7 @@ const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
     console.log(JSON.stringify(requestObj, null, 2));
   }
 
+  // We get an error if there is a space in the Columns name
   const requestXmlStr = convertObjToXml(requestObj);
   if (flagShowRequest && flagShowXml) {
     console.log(`Request:\n${requestXmlStr}`)
@@ -286,20 +287,20 @@ ipcMain.on('screen:start', () => {
   // showDayBook();
 
   handleCreateLedgerGroup("Computers and Accessories", "Indirect Expenses");
-  handleCreateLedgerGroup("Laptop", "Computers and Accessories");
-
-  handleCreateLedger('Bank of India', 'Bank Accounts', 0);
-  handleCreateLedger('Conveyance', 'Indirect Expenses', 0);
-
-  handleCreateVoucher("20220401", "Payment", "Conveyance", "Bank of India", 9000, "Payment for Travel");
-  handleCreateVoucher("20220401", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
-
-  const unit_name = "Num";
-  handleCreateUnitName(unit_name)
-  handleCreateStockGroup("Securities", "");
-  handleCreateStockGroup("Equities", "Securities");
-  handleCreateStockGroup("Derivatives", "Securities");
-  handleCreateStockItem("RELIANCE", "Equities", unit_name, "BUY", 100, 239500);
+  // handleCreateLedgerGroup("Laptop", "Computers and Accessories");
+  //
+  // handleCreateLedger('Bank of India', 'Bank Accounts', 0);
+  // handleCreateLedger('Conveyance', 'Indirect Expenses', 0);
+  //
+  // handleCreateVoucher("20220401", "Payment", "Conveyance", "Bank of India", 9000, "Payment for Travel");
+  // handleCreateVoucher("20220401", "Payment", "Conveyance", "Bank of India", 14000, "Payment for Travel");
+  //
+  // const unit_name = "Num";
+  // handleCreateUnitName(unit_name)
+  // handleCreateStockGroup("Securities", "");
+  // handleCreateStockGroup("Equities", "Securities");
+  // handleCreateStockGroup("Derivatives", "Securities");
+  // handleCreateStockItem("RELIANCE", "Equities", unit_name, "BUY", 100, 239500);
 
   // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
   //

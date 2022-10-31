@@ -1,5 +1,5 @@
 const XLSX = require("xlsx");
-const { convertObjToXml } = require('./xml');
+const { convertObjToXml } = require('./xml/convert');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
