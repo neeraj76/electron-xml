@@ -1,20 +1,19 @@
 const electron = require('electron');
 const { processExcelFile } = require('./excel');
 const { app, BrowserWindow, ipcMain } = electron;
-const { initApi, tallyApiCall } = require('./services/api');
+
 const { get_accounts_list_request, get_ledgers_list_request, get_balance_sheet_request, get_profit_loss_request,
   get_trial_balance_request, get_day_book_request, create_ledger_request, create_ledger_group_request,
   create_voucher_request, create_stock_group_request, create_unit_name_request, create_stock_item_request
 } = require('./tally/messages');
-const { convertObjToXml, convertXmlToObj } = require("./xml/convert");
+
+const { tallyProcessRequest } = require('./tally/request');
 
 let mainWindow;
 
 
-const flagShowRequest = false;
-const flagShowResponse = false;
+
 const flagShowDesc = false;
-const flagShowXml = false;
 const flagShowAll = false;
 const flagShowArray = false;
 const indentationLen = 4;
@@ -31,38 +30,6 @@ app.on('ready', () => {
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`)
 });
-
-
-const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
-  if (flagShowRequest) {
-    console.log(JSON.stringify(requestObj, null, 2));
-  }
-
-  // We get an error if there is a space in the Columns name
-  const requestXmlStr = convertObjToXml(requestObj);
-  if (flagShowRequest && flagShowXml) {
-    console.log(`Request:\n${requestXmlStr}`)
-  }
-
-  tallyApiCall({req: requestXmlStr, timeout: 5})
-      .then((responseXmlStr) => {
-        if (flagShowResponse && flagShowXml) {
-          console.log(`Response:\n${responseXmlStr}`);
-        }
-
-        convertXmlToObj(responseXmlStr, (err, responseObj) => {
-          if (flagShowResponse) {
-            console.log(`Response:\n${JSON.stringify(responseObj, null, 2)}`);
-          }
-          callback(responseObj, requestObj, reqIdStr);
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        console.log('Make sure the Tally Application is running and on the same network');
-      });
-}
-
 
 function showAccounts() {
   const accountListRequest = get_accounts_list_request();
