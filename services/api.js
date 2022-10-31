@@ -8,7 +8,7 @@ const initApi = (baseUrl) => {
   });
 }
 
-const tallyApiCall = (req, callback) => {
+const tallyApiCall = ({req, timeout=3}) => {
   if (debugAxios) {
     console.log('getResource: Sending axios request');
     console.log(`req="${req}" type=${typeof req}`);
@@ -18,15 +18,16 @@ const tallyApiCall = (req, callback) => {
     axios({
       method: "post",
       url: 'http://192.168.64.3:9000',
-      timeout: 1000 * 3,
+      timeout: 1000 * timeout,
       data: req
     })
     .then(resp => {
       // console.log(resp.data);
-      callback(resp.data, req);
+      resolve(resp.data, req);
     })
     .catch(err => {
-      console.error(err.message);
+      // console.error(err.message);
+      reject(err.message);
     });
   });
 }

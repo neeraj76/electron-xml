@@ -44,18 +44,23 @@ const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
     console.log(`Request:\n${requestXmlStr}`)
   }
 
-  tallyApiCall(requestXmlStr, (responseXmlStr) => {
-    if (flagShowResponse && flagShowXml) {
-      console.log(`Response:\n${responseXmlStr}`);
-    }
+  tallyApiCall({req: requestXmlStr, timeout: 5})
+      .then((responseXmlStr) => {
+        if (flagShowResponse && flagShowXml) {
+          console.log(`Response:\n${responseXmlStr}`);
+        }
 
-    convertXmlToObj(responseXmlStr, (err, responseObj) => {
-      if (flagShowResponse) {
-        console.log(`Response:\n${JSON.stringify(responseObj, null, 2)}`);
-      }
-      callback(responseObj, requestObj, reqIdStr);
-    });
-  });
+        convertXmlToObj(responseXmlStr, (err, responseObj) => {
+          if (flagShowResponse) {
+            console.log(`Response:\n${JSON.stringify(responseObj, null, 2)}`);
+          }
+          callback(responseObj, requestObj, reqIdStr);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        console.log('Make sure the Tally Application is running and on the same network');
+      });
 }
 
 
