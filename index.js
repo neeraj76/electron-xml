@@ -1,7 +1,7 @@
 const electron = require('electron');
 const { processExcelFile } = require('./spreadsheet/excel');
 const { app, BrowserWindow, ipcMain } = electron;
-const { commandTester } = require('./tally/commands');
+const { commandTester } = require('./tally/handlers');
 
 let mainWindow;
 
@@ -17,18 +17,23 @@ app.on('ready', () => {
 });
 
 
-ipcMain.on('screen:start', () => {
-  commandTester();
-
-  // const path = `/Users/neeraj/Projects/Live/glassball-api-server/data-files/glassball-input/file.xlsx`;
-  //
-  // const sheets = processExcelFile(path);
-  //
-  // mainWindow.webContents.send('excel:metadata', sheets.length);
-});
-
-ipcMain.on('video:submit', (event, path) => {
+const handleSpreadsheet = (path) => {
   const sheets = processExcelFile(path);
 
-  mainWindow.webContents.send('excel:metadata', sheets.length);
+  if (sheets) {
+    mainWindow.webContents.send('excel:metadata', sheets.length);
+  }
+}
+
+ipcMain.on('screen:start', () => {
+  // commandTester();
+
+  const path = `/Users/neeraj/Desktop/tally_commands.xlsx`;
+  handleSpreadsheet(path);
+});
+
+
+ipcMain.on('video:submit', (event, path) => {
+  console.log(`Received file ${path}`);
+  handleSpreadsheet(path);
 });

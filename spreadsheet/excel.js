@@ -1,5 +1,7 @@
 const XLSX = require("xlsx");
 const { convertObjToXml } = require('../xml/convert');
+const { processRowTally } = require('./excel_tally');
+const fs = require('fs');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
@@ -10,15 +12,24 @@ function processWorkbook(workbook, callback) {
 }
 
 const processExcelFile = (path) => {
+  // console.log(`path=${path}`)
+
+  if (!fs.existsSync(path)) {
+    console.error(`file '${path}' does not exist`);
+    return;
+  }
+
   const workbook = XLSX.readFile(path);
   const sheets = Object.keys(workbook.Sheets);
 
-  console.log(`path=${path}`)
+
 
   processWorkbook(workbook, (rows) => {
     rows.forEach(row => {
-      const xml = convertObjToXml(row);
-      console.log(xml);
+      processRowTally(row);
+
+      // const xml = convertObjToXml(row);
+      // console.log(xml);
     })
   });
 

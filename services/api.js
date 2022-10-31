@@ -1,6 +1,7 @@
 const axios = require('axios');
 
-const debugAxios = true;
+const debugAxios = false;
+const debugAxiosData = false;
 
 const initApi = (baseUrl) => {
   const instance = axios.create({
@@ -11,7 +12,9 @@ const initApi = (baseUrl) => {
 const tallyApiCall = ({req, timeout=3}) => {
   if (debugAxios) {
     console.log('getResource: Sending axios request');
-    console.log(`req="${req}" type=${typeof req}`);
+    if (debugAxiosData) {
+      console.log(`req="${req}" type=${typeof req}`);
+    }
   }
 
   return new Promise(function(resolve, reject) {
