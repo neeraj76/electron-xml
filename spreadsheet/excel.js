@@ -1,6 +1,4 @@
 const XLSX = require("xlsx");
-const { convertObjToXml } = require('../xml/convert');
-const { processRowTally } = require('./excel_tally');
 const fs = require('fs');
 
 function processWorkbook(workbook, callback) {
@@ -11,7 +9,7 @@ function processWorkbook(workbook, callback) {
   });
 }
 
-const processExcelFile = (path) => {
+const processExcelFile = (path, rowFunction) => {
   // console.log(`path=${path}`)
 
   if (!fs.existsSync(path)) {
@@ -24,7 +22,7 @@ const processExcelFile = (path) => {
 
   processWorkbook(workbook, (rows) => {
     rows.forEach(row => {
-      processRowTally(row);
+      rowFunction(row);
 
       // const xml = convertObjToXml(row);
       // console.log(xml);

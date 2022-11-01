@@ -2,6 +2,7 @@ const electron = require('electron');
 const { processExcelFile } = require('./spreadsheet/excel');
 const { app, BrowserWindow, ipcMain } = electron;
 const { commandTester } = require('./tally/handlers');
+const {processRowTally} = require("./spreadsheet/excel_tally");
 
 let mainWindow;
 
@@ -18,7 +19,7 @@ app.on('ready', () => {
 
 
 const handleSpreadsheet = (path) => {
-  const sheets = processExcelFile(path);
+  const sheets = processExcelFile(path, processRowTally);
 
   if (sheets) {
     mainWindow.webContents.send('excel:metadata', sheets.length);
@@ -29,7 +30,7 @@ ipcMain.on('screen:start', () => {
   commandTester();
 
   // const path = `/Users/neeraj/Desktop/tally_ledger.xlsx`;
-  const path = `/Users/neeraj/Desktop/tally_voucher.xlsx`;
+  const path = `/Users/neeraj/Desktop/tally_vouchersplit.xlsx`;
   // const path = `/Users/neeraj/Desktop/tally_commands.xlsx`;
   handleSpreadsheet(path);
 });

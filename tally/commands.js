@@ -1,9 +1,15 @@
-const { handleCreateLedgerGroup, handleCreateLedger, handleCreateVoucher} = require('./handlers');
+const {
+  handleCreateLedgerGroup,
+  handleCreateLedger,
+  handleCreateVoucher,
+  handleCreateVoucherSplit
+} = require('./handlers');
 
 const tallyCommands = [
     'LEDGERGROUP',
     'LEDGER',
-    'VOUCHER'
+    'VOUCHER',
+    'VOUCHERSPLIT'
 ]
 
 const tallyCommandMap = {
@@ -15,6 +21,9 @@ const tallyCommandMap = {
   },
   'VOUCHER': {
     handler: handleCreateVoucher
+  },
+  'VOUCHERSPLIT': {
+    handler: handleCreateVoucherSplit
   }
 }
 
