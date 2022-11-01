@@ -239,7 +239,7 @@ function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
       }
     } else if (keys.includes('LINEERROR')) {
       const error = data.LINEERROR[0];
-      console.error(`Error: ${error}`);
+      console.error(`TallyError: ${error} for request '${reqIdStr}'`);
     } else {
       throw "Tally Response to be supported"
     }
@@ -307,7 +307,7 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
   const reqIdStr = `Create StockItem: ${stockitem_name} [parent:${parent_stock_group_name}] ${unit_name}}`;
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
-  
+
   tallyCommandExecute(createStockItemRequest, reqIdStr);
 }
 
