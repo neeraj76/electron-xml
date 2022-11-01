@@ -15,7 +15,14 @@ app.on('ready', () => {
       contextIsolation: false,
     }
   });
-  mainWindow.loadURL(`file://${__dirname}/index.html`)
+  // mainWindow.loadURL(`file://${__dirname}/index.html`)
+  mainWindow.loadFile('./index.html')
+      .then(response => {
+        console.log(`File loaded successfully for mainWindow`);
+      })
+      .catch(error => {
+        console.error(`File not loaded: ${error}`);
+      });
 
   // tallyCheckServerBoolean()
   //     .then(response => console.log(`response: ${response}`))
