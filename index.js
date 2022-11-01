@@ -35,7 +35,7 @@ ipcMain.on('screen:start', () => {
 });
 
 
-ipcMain.on('video:submit', (event, path) => {
+ipcMain.on('excel:submit', (event, path) => {
   console.log(`Received file ${path}`);
   handleSpreadsheet(path);
 });

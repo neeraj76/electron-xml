@@ -28,7 +28,7 @@
             }
 
             const {path} = document.querySelector('input').files[0];
-            ipcRenderer.send('video:submit', path);
+            ipcRenderer.send('excel:submit', path);
 
         });
 
