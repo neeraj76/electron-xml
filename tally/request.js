@@ -6,25 +6,27 @@ const flagShowRequest = false;
 const flagShowResponse = false;
 const flagShowXml = false;
 
-const parseServerCheckResponse = (response, callback) => {
-  console.log(`parseServerCheckResponse: ${response}`);
-  return {status: 'Active'};
+const parseServerCheckResponse = (response) => {
+  console.log(`parseServerCheckResponse: ${JSON.stringify(response)}`);
+  return response;
+}
+
+const tallyCheckServerBoolean = () => {
+  return new Promise(function (resolve,reject) {
+    tallyProcessRequestPromise(null, "Check Server")
+        .then(response => {
+          console.log(`tallyCheckServerPromise: ${JSON.stringify(response)}`)
+          resolve(true);
+        })
+        .catch(error => {
+          console.error(`tallyCheckServerPromise: ${JSON.stringify(error)}`);
+          resolve(false);
+        })
+  });
 }
 
 const tallyCheckServer = () => {
-
-  return new Promise(function (resolve,reject) {
-
-    try {
-      tallyProcessRequest(null,
-          (response) => resolve(parseServerCheckResponse(response)),
-          "Check Server");
-    } catch (e) {
-      reject(e);
-    }
-  });
-
-  // return tallyApiCall({req: "", timeout:4});
+  return tallyProcessRequestPromise(null, "Check Server");
 }
 
 const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
@@ -73,7 +75,60 @@ const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
       });
 }
 
+const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
+  return new Promise((resolve, reject) => {
+    if (flagShowReqId) {
+      console.log(`tallyProcessRequest: req='${reqIdStr}'`);
+    }
+
+    if (flagShowRequest) {
+      console.log(JSON.stringify(requestObj, null, 2));
+    }
+
+    // We get an error if there is a space in the Columns name
+    let requestXmlStr = "";
+    if (requestObj !== null) {
+      requestXmlStr = convertObjToXml(requestObj);
+      if (flagShowRequest && flagShowXml) {
+        console.log(`Request:\n${requestXmlStr}`)
+      }
+    }
+
+    tallyApiCall({req: requestXmlStr})
+        .then((tallyResponseXmlStr) => {
+          if (flagShowResponse && flagShowXml) {
+            console.log(`Response:\n${tallyResponseXmlStr}`);
+          }
+
+          convertXmlToObj(tallyResponseXmlStr, (err, tallyResponseObj) => {
+            if (flagShowResponse) {
+              console.log(`Response:\n${JSON.stringify(tallyResponseObj, null, 2)}`);
+            }
+            const responseObj = {
+              status: 'Success',
+              tallyResponse: tallyResponseObj
+            }
+            resolve(responseObj, requestObj, reqIdStr);
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          console.log('Make sure the Tally Application is running and is reachable on the network');
+          const errorObj = {
+            status: 'Failed',
+            reason: 'timeout',
+            tallyError: error
+          }
+          reject(errorObj);
+        });
+  })
+
+
+}
+
+
 module.exports = {
   tallyProcessRequest,
-  tallyCheckServer
+  tallyCheckServer,
+  tallyCheckServerBoolean
 }
