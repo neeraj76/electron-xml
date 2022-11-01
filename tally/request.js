@@ -6,11 +6,6 @@ const flagShowRequest = false;
 const flagShowResponse = false;
 const flagShowXml = false;
 
-const parseServerCheckResponse = (response) => {
-  console.log(`parseServerCheckResponse: ${JSON.stringify(response)}`);
-  return response;
-}
-
 const tallyCheckServerBoolean = () => {
   return new Promise(function (resolve,reject) {
     tallyProcessRequestPromise(null, "Check Server")
@@ -106,9 +101,11 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
             }
             const responseObj = {
               status: 'Success',
-              tallyResponse: tallyResponseObj
+              tallyResponse: tallyResponseObj,
+              requestObj,
+              reqIdStr
             }
-            resolve(responseObj, requestObj, reqIdStr);
+            resolve(responseObj);
           });
         })
         .catch((error) => {
@@ -117,7 +114,9 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
           const errorObj = {
             status: 'Failed',
             reason: 'timeout',
-            tallyError: error
+            tallyError: error,
+            requestObj,
+            reqIdStr
           }
           reject(errorObj);
         });
@@ -129,6 +128,7 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
 
 module.exports = {
   tallyProcessRequest,
+  tallyProcessRequestPromise,
   tallyCheckServer,
   tallyCheckServerBoolean
 }

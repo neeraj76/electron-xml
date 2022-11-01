@@ -14,7 +14,7 @@ const {
   create_stock_group_request,
   create_stock_item_request
 } = require("./messages");
-const {tallyProcessRequest} = require("./request");
+const { tallyProcessRequest, tallyProcessRequestPromise } = require("./request");
 const { ExcelDateToJSDate, dateTallyFormat } = require('../spreadsheet/excel_date');
 const { DateToStringDate } = require('../utils/date');
 
@@ -199,20 +199,20 @@ function showDayBook() {
   });
 }
 
-function parseResponseObj(responseObj, requestObj, reqIdStr) {
-  // TBD: Need to do error checking here
-  console.log(`parseResponseObj: responseObj=${responseObj}`);
+function parseTallyErrorObj(tallyError, requestObj, reqIdStr) {
+  console.log(`Error! ${reqIdStr}: ${tallyError}`)
+}
 
-  const tallyResponseObj = responseObj.tallyResponseObj
+function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
   let data;
   try {
-    data = tallyResponseObj.ENVELOPE.BODY[0].DATA[0];
+    data = tallyResponse.ENVELOPE.BODY[0].DATA[0];
   } catch (e) {
-    console.error(`The response is not to a tally command`);
+    console.error(`The response is not to a tally show command`);
   }
 
   if (data === undefined) {
-    data = responseObj.RESPONSE;
+    data = tallyResponse.RESPONSE;
     console.log(`${data}`);
   } else {
     const keys = Object.keys(data);
@@ -234,7 +234,7 @@ function parseResponseObj(responseObj, requestObj, reqIdStr) {
 
 
       if (flagShowDesc) {
-        const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+        const desc = tallyResponse.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
         traverse(desc, 0);
       }
     } else if (keys.includes('LINEERROR')) {
@@ -246,17 +246,28 @@ function parseResponseObj(responseObj, requestObj, reqIdStr) {
   }
 }
 
+function tallyCommandExecute(commandRequest, reqIdStr) {
+  tallyProcessRequestPromise(commandRequest, reqIdStr)
+      .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        parseTallyResponseObj(tallyResponse, requestObj, reqIdStr);
+      })
+      .catch(({status, reason, tallyError, requestObj, reqIdStr}) => {
+        parseTallyErrorObj(tallyError, requestObj, reqIdStr);
+      });
+}
 
 function handleCreateLedgerGroup(ledger_group_name, parent_ledger_group_name) {
   const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
-  const createLedgersRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
-  tallyProcessRequest(createLedgersRequest, parseResponseObj, reqIdStr);
+  const createLedgerGroupsRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
+
+  tallyCommandExecute(createLedgerGroupsRequest, reqIdStr);
 }
 
 function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amount) {
   const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}]`;
   const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
-  tallyProcessRequest( createLedgersRequest, parseResponseObj, reqIdStr);
+
+  tallyCommandExecute(createLedgersRequest, reqIdStr);
 }
 
 
@@ -265,26 +276,30 @@ function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledg
   console.log(`date=${date}`);
   const reqIdStr = `Create Voucher: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
   const createVoucherRequest = create_voucher_request(voucher_type, date, debit_ledger, credit_ledger, amount, narration);
-  tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
+
+  tallyCommandExecute(createVoucherRequest, reqIdStr);
 }
 
 function handleCreateVoucherSplit(voucher_type, excel_date, narration, debit_entries, credit_entries) {
   const date = ExcelDateToJSDate(excel_date);
   const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_entries} CR:${credit_entries}]`;
-  const createVoucherRequest = create_vouchersplit_request(voucher_type, date, narration, debit_entries, credit_entries);
-  tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
+  const createVoucherSplitRequest = create_vouchersplit_request(voucher_type, date, narration, debit_entries, credit_entries);
+
+  tallyCommandExecute(createVoucherSplitRequest, reqIdStr);
 }
 
 function handleCreateUnitName(unit_name) {
   const reqIdStr = `Create Unit: ${unit_name}`;
-  const createUnitNameRequest = create_unit_name_request(unit_name)
-  tallyProcessRequest(createUnitNameRequest, parseResponseObj, reqIdStr);
+  const createUnitNameRequest = create_unit_name_request(unit_name);
+
+  tallyCommandExecute(createUnitNameRequest, reqIdStr);
 }
 
 function handleCreateStockGroup(stock_group_name, parent_stock_group_name) {
   const reqIdStr = `Create StockGroup: ${stock_group_name} [parent:${parent_stock_group_name}]`;
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
-  tallyProcessRequest(createStockGroupRequest, parseResponseObj, reqIdStr);
+
+  tallyCommandExecute(createStockGroupRequest, reqIdStr);
 }
 
 function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_name,
@@ -292,7 +307,8 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
   const reqIdStr = `Create StockItem: ${stockitem_name} [parent:${parent_stock_group_name}] ${unit_name}}`;
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
-  tallyProcessRequest(createStockItemRequest, parseResponseObj, reqIdStr);
+  
+  tallyCommandExecute(createStockItemRequest, reqIdStr);
 }
 
 function commandTester() {

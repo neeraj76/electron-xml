@@ -17,13 +17,13 @@ app.on('ready', () => {
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`)
 
-  tallyCheckServerBoolean()
-      .then(response => console.log(`response: ${response}`))
-      .catch(error => console.error(`error: ${error}`));
-
-  tallyCheckServer()
-      .then(response => console.log(`response: ${JSON.stringify(response)}`))
-      .catch(error => console.error(`error: ${JSON.stringify(error)}`));
+  // tallyCheckServerBoolean()
+  //     .then(response => console.log(`response: ${response}`))
+  //     .catch(error => console.error(`error: ${error}`));
+  //
+  // tallyCheckServer()
+  //     .then(response => console.log(`response: ${JSON.stringify(response)}`))
+  //     .catch(error => console.error(`error: ${JSON.stringify(error)}`));
 });
 
 
@@ -40,7 +40,7 @@ ipcMain.on('screen:start', () => {
 
   // handleSpreadsheet(`/Users/neeraj/Desktop/tally_ledger.xlsx`);
   // handleSpreadsheet(`/Users/neeraj/Desktop/tally_voucher.xlsx`);
-  // handleSpreadsheet(`/Users/neeraj/Desktop/tally_vouchersplit.xlsx`);
+  handleSpreadsheet(`/Users/neeraj/Desktop/tally_vouchersplit.xlsx`);
   // handleSpreadsheet(`/Users/neeraj/Desktop/tally_commands.xlsx`);
 });
 
