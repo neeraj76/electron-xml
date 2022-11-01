@@ -1,6 +1,7 @@
 const {
   get_accounts_list_request,
   get_ledgers_list_request,
+  get_ledger_groups_list_request,
   get_balance_sheet_request,
   get_profit_loss_request,
   get_trial_balance_request,
@@ -8,7 +9,7 @@ const {
   create_ledger_group_request,
   create_ledger_request,
   create_voucher_request,
-  create_voucher_split_request,
+  create_vouchersplit_request,
   create_unit_name_request,
   create_stock_group_request,
   create_stock_item_request
@@ -40,6 +41,25 @@ function showAccounts() {
 
 function showLedgers() {
   const ledgerListRequest = get_ledgers_list_request();
+
+  tallyProcessRequest(ledgerListRequest, (responseObj) => {
+    const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
+    ledgers.forEach(ledger => {
+      // console.log(`Keys:${Object.keys(ledger)}`);
+      // console.log(`${ledger['$'].NAME}`)
+      if (Object.keys(ledger.ISDELETED).length > 1) {
+        // console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
+      }
+      const ledger_name = ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
+      console.log(`${ledger_name}`);
+    });
+
+    console.log(``)
+  })
+}
+
+function showLedgerGroups() {
+  const ledgerListRequest = get_ledger_groups_list_request();
 
   tallyProcessRequest(ledgerListRequest, (responseObj) => {
     const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
@@ -180,34 +200,49 @@ function showDayBook() {
 }
 
 function parseResponseObj(responseObj, requestObj, reqIdStr) {
-  const data = responseObj.ENVELOPE.BODY[0].DATA[0]
-  const keys = Object.keys(data);
+  // TBD: Need to do error checking here
+  console.log(`parseResponseObj: responseObj=${responseObj}`);
 
-  if (keys.includes('IMPORTRESULT')) {
-    const result = data.IMPORTRESULT[0];
+  const tallyResponseObj = responseObj.tallyResponseObj
+  let data;
+  try {
+    data = tallyResponseObj.ENVELOPE.BODY[0].DATA[0];
+  } catch (e) {
+    console.error(`The response is not to a tally command`);
+  }
 
-    // traverse(result, 0);
-    if (result.CREATED == 1) {
-      console.log(`${reqIdStr}: Created Successfully`);
-    } else if (result.ALTERED == 1) {
-      console.log(`${reqIdStr}: Modified Successfully`);
-    } else if (result.DELETED == 1) {
-      console.log(`${reqIdStr}: Deleted Successfully`);
-    } else {
-      console.log(`${reqIdStr}: Repsonse traversed`)
-      traverse(result, 0);
-    }
-
-
-    if (flagShowDesc) {
-      const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-      traverse(desc, 0);
-    }
-  } else if (keys.includes('LINEERROR')) {
-    const error = data.LINEERROR[0];
-    console.error(`Error: ${error}`);
+  if (data === undefined) {
+    data = responseObj.RESPONSE;
+    console.log(`${data}`);
   } else {
-    throw "Tally Response to be supported"
+    const keys = Object.keys(data);
+
+    if (keys.includes('IMPORTRESULT')) {
+      const result = data.IMPORTRESULT[0];
+
+      // traverse(result, 0);
+      if (result.CREATED == 1) {
+        console.log(`${reqIdStr}: Created Successfully`);
+      } else if (result.ALTERED == 1) {
+        console.log(`${reqIdStr}: Modified Successfully`);
+      } else if (result.DELETED == 1) {
+        console.log(`${reqIdStr}: Deleted Successfully`);
+      } else {
+        console.log(`${reqIdStr}: Repsonse traversed`)
+        traverse(result, 0);
+      }
+
+
+      if (flagShowDesc) {
+        const desc = responseObj.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+        traverse(desc, 0);
+      }
+    } else if (keys.includes('LINEERROR')) {
+      const error = data.LINEERROR[0];
+      console.error(`Error: ${error}`);
+    } else {
+      throw "Tally Response to be supported"
+    }
   }
 }
 
@@ -236,7 +271,7 @@ function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledg
 function handleCreateVoucherSplit(voucher_type, excel_date, narration, debit_entries, credit_entries) {
   const date = ExcelDateToJSDate(excel_date);
   const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_entries} CR:${credit_entries}]`;
-  const createVoucherRequest = create_voucher_split_request(voucher_type, date, debit_entries, credit_entries, narration);
+  const createVoucherRequest = create_vouchersplit_request(voucher_type, date, narration, debit_entries, credit_entries);
   tallyProcessRequest(createVoucherRequest, parseResponseObj, reqIdStr);
 }
 
@@ -263,10 +298,11 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
 function commandTester() {
   // showAccounts();
   // showLedgers();
+  showLedgerGroups();
   // showBalanceSheet();
   // showProfitLoss();
   // showTrialBalance();
-  showDayBook();
+  // showDayBook();
 
   // handleCreateLedgerGroup("Computers and Accessories", "Indirect Expenses");
   // handleCreateLedgerGroup("Laptop", "Computers and Accessories");

@@ -3,6 +3,7 @@ const { processExcelFile } = require('./spreadsheet/excel');
 const { app, BrowserWindow, ipcMain } = electron;
 const { commandTester } = require('./tally/handlers');
 const {processRowTally} = require("./spreadsheet/excel_tally");
+const {tallyCheckServer} = require("./tally/request");
 
 let mainWindow;
 
@@ -15,6 +16,10 @@ app.on('ready', () => {
     }
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`)
+
+  // tallyCheckServer()
+  //     .then(response => console.log(`response: ${response.status}`))
+  //     .catch(error => console.error(`error: ${error}`));
 });
 
 
@@ -27,13 +32,12 @@ const handleSpreadsheet = (path) => {
 }
 
 ipcMain.on('screen:start', () => {
-  commandTester();
+  // commandTester();
 
-  // const path = `/Users/neeraj/Desktop/tally_ledger.xlsx`;
-  // const path = `/Users/neeraj/Desktop/tally_voucher.xlsx`;
-  const path = `/Users/neeraj/Desktop/tally_vouchersplit.xlsx`;
-  // const path = `/Users/neeraj/Desktop/tally_commands.xlsx`;
-  handleSpreadsheet(path);
+  handleSpreadsheet(`/Users/neeraj/Desktop/tally_ledger.xlsx`);
+  // handleSpreadsheet(`/Users/neeraj/Desktop/tally_voucher.xlsx`);
+  // handleSpreadsheet(`/Users/neeraj/Desktop/tally_vouchersplit.xlsx`);
+  // handleSpreadsheet(`/Users/neeraj/Desktop/tally_commands.xlsx`);
 });
 
 

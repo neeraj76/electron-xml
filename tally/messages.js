@@ -72,6 +72,24 @@ const get_ledgers_list_request = () => {
   return create_export_request(header, body)
 }
 
+const get_ledger_groups_list_request = () => {
+  const header = {
+    ...get_version_1_export_header(),
+    TYPE: "COLLECTION",
+    ID: "List of Ledgers"
+  }
+
+  const body = {
+    EXPORTDATA: {
+      DESC: {
+        STATICVARIABLES: get_static_variables()
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
 const get_balance_sheet_request = () => {
   const header = get_export_data_header();
 
@@ -248,7 +266,7 @@ const create_voucher_request = (voucher_type, date, debit_ledger, credit_ledger,
 }
 
 
-const create_voucher_split_request = (voucher_type, date, debit_entries, credit_entries, narration) => {
+const create_vouchersplit_request = (voucher_type, date, narration, debit_entries, credit_entries) => {
   const header = {
     ...get_version_1_import_header(),
     TYPE: "Data",
@@ -264,18 +282,37 @@ const create_voucher_split_request = (voucher_type, date, debit_entries, credit_
     VOUCHERNUMBER: 1
   };
 
-  voucher['ALLLEDGERENTRIES.LIST'] = [
-    {
-      LEDGERNAME: debit_ledger,
+  console.log(`debit_entries:${debit_entries}`);
+  console.log(`credit_entries:${credit_entries}`);
+
+  voucher['ALLLEDGERENTRIES.LIST'] = []
+  let debit_total = 0;
+  debit_entries.forEach(dentry => {
+    voucher['ALLLEDGERENTRIES.LIST'].push({
+      LEDGERNAME: dentry.ledger_account,
       ISDEEMEDPOSITIVE: "Yes",
-      AMOUNT: -amount
-    },
-    {
-      LEDGERNAME: credit_ledger,
+      AMOUNT: -dentry.amount
+    });
+    debit_total += dentry.amount;
+  })
+
+  let credit_total = 0;
+  credit_entries.forEach(dentry => {
+    voucher['ALLLEDGERENTRIES.LIST'].push({
+      LEDGERNAME: dentry.ledger_account,
       ISDEEMEDPOSITIVE: "No",
-      AMOUNT: amount
-    }
-  ]
+      AMOUNT: dentry.amount
+    });
+    credit_total += dentry.amount;
+  })
+
+  const net_diff = credit_total - debit_total;
+  console.log(`net_diff=${net_diff}`);
+
+  if (net_diff > 0.00001) {
+    console.error(`Error: The total debit=${debit_total} does not match total credit =${credit_total}`);
+    return;
+  }
 
   const body = {
     DESC: {},
@@ -287,7 +324,6 @@ const create_voucher_split_request = (voucher_type, date, debit_entries, credit_
   }
 
   return create_export_request(header, body)
-
 }
 
 const create_unit_name_request = (unit_name) => {
@@ -399,6 +435,7 @@ const create_stock_item_request = (stockitem_name, parent_stock_group_name, unit
 module.exports = {
   get_accounts_list_request,
   get_ledgers_list_request,
+  get_ledger_groups_list_request,
   get_balance_sheet_request,
   get_profit_loss_request,
   get_trial_balance_request,
@@ -407,7 +444,7 @@ module.exports = {
   create_ledger_request,
   create_ledger_group_request,
   create_voucher_request,
-  create_voucher_split_request,
+  create_vouchersplit_request,
   create_unit_name_request,
   create_stock_group_request,
   create_stock_item_request
