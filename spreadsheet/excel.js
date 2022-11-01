@@ -3,7 +3,7 @@ const fs = require('fs');
 
 function processWorkbook(workbook, callback) {
   workbook.SheetNames.forEach(sheetName => {
-    console.log(`Sheet:${sheetName}`);
+    console.log(`Processing sheet '${sheetName}'`);
     let rows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
     callback(rows);
   });

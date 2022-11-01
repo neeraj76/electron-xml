@@ -1,4 +1,7 @@
 const {dateTallyFormat} = require("./tally_date");
+
+const flagDebugRequests = false;
+
 const create_export_request = (header, body) => {
   return {
     'ENVELOPE': {
@@ -282,8 +285,10 @@ const create_vouchersplit_request = (voucher_type, date, narration, debit_entrie
     VOUCHERNUMBER: 1
   };
 
-  console.log(`debit_entries:${debit_entries}`);
-  console.log(`credit_entries:${credit_entries}`);
+  if (flagDebugRequests) {
+    console.log(`debit_entries:${debit_entries}`);
+    console.log(`credit_entries:${credit_entries}`);
+  }
 
   voucher['ALLLEDGERENTRIES.LIST'] = []
   let debit_total = 0;
@@ -307,8 +312,6 @@ const create_vouchersplit_request = (voucher_type, date, narration, debit_entrie
   })
 
   const net_diff = credit_total - debit_total;
-  console.log(`net_diff=${net_diff}`);
-
   if (net_diff > 0.00001) {
     console.error(`Error: The total debit=${debit_total} does not match total credit =${credit_total}`);
     return;

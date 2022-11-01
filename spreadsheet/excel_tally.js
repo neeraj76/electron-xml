@@ -1,9 +1,12 @@
 const { tallyCommands, tallyCommandMap } = require('../tally/commands');
 
 const debugRow = false;
+const debugParameters = false;
 
 const processParameters = (params) => {
-  console.log(`params=${params}`);
+  if (debugParameters) {
+    console.log(`params=${params}`);
+  }
 
   const new_params = [];
   const debit_ledger = [];
@@ -32,11 +35,15 @@ const processParameters = (params) => {
 
   new_params.push(debit_ledger);
   new_params.push(credit_ledger);
-  console.log(`new_params=${new_params}`);
 
+  if (debugParameters) {
+    console.log(`new_params=${new_params}`);
+  }
 
   return new_params;
 }
+
+
 
 const processRowTally = (row) => {
   if (debugRow) {
@@ -60,12 +67,16 @@ const processRowTally = (row) => {
   if (tallyCommands.includes(row_command)) {
     if (row_active) {
       let parameters = Object.keys(row).map(key => row[key]);
-      console.log(`parameters=${parameters}`)
+      if (debugParameters) {
+        console.log(`parameters=${parameters}`)
+      }
 
       parameters = processParameters(parameters);
       tallyCommandMap[row_command].handler.apply(null, parameters);
     } else {
-      console.log(`row ${row} disabled`);
+      if (debugRow) {
+        console.log(`row ${row} disabled`);
+      }
     }
   } else {
     console.log(`Command ${row_command} is not valid`);
