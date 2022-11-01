@@ -17,11 +17,11 @@ app.on('ready', () => {
   });
   mainWindow.loadURL(`file://${__dirname}/index.html`)
 
-  // tallyCheckServer()
-  //     .then(response => console.log(`response: ${response.status}`))
-  //     .catch(error => console.error(`error: ${error}`));
-
   tallyCheckServerBoolean()
+      .then(response => console.log(`response: ${response}`))
+      .catch(error => console.error(`error: ${error}`));
+
+  tallyCheckServer()
       .then(response => console.log(`response: ${JSON.stringify(response)}`))
       .catch(error => console.error(`error: ${JSON.stringify(error)}`));
 });
