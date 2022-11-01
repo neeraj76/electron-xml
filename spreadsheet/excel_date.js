@@ -6,7 +6,13 @@ function JSDateToExcelDate(inDate) {
 
 }
 function ExcelDateToJSDate(date) {
-  return new Date(Math.round((date - 25569)*86400*1000));
+  let jsDate;
+  try {
+    jsDate = new Date(Math.round((date - 25569)*86400*1000));
+  } catch (e) {
+    console.error('Error converting excel date');
+  }
+  return jsDate;
 }
 
 module.exports = {

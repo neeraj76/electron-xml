@@ -2,6 +2,42 @@ const { tallyCommands, tallyCommandMap } = require('../tally/commands');
 
 const debugRow = false;
 
+const processParameters = (params) => {
+  console.log(`params=${params}`);
+
+  const new_params = [];
+  const debit_ledger = [];
+  const credit_ledger = [];
+  let i = 0;
+  while (i < params.length) {
+    const curr_param = params[i];
+    if (curr_param !== 'DR' && curr_param != 'CR') {
+      new_params.push(curr_param);
+      i += 1;
+    } else {
+      const lentry = {}
+      lentry['ledger_account'] = params[i+1];
+      lentry['amount'] = params[i+2];
+      if (curr_param === 'DR') {
+        debit_ledger.push(lentry);
+      } else if (curr_param === 'CR') {
+        credit_ledger.push(lentry);
+      } else {
+        throw `ledger entry type ${curr_param} not handled`;
+      }
+
+      i += 3;
+    }
+  }
+
+  new_params.push(debit_ledger);
+  new_params.push(credit_ledger);
+  console.log(`new_params=${new_params}`);
+
+
+  return new_params;
+}
+
 const processRowTally = (row) => {
   if (debugRow) {
     console.log(`typeof(row)=${typeof row}`, row);
@@ -23,8 +59,10 @@ const processRowTally = (row) => {
 
   if (tallyCommands.includes(row_command)) {
     if (row_active) {
-      const parameters = Object.keys(row).map(key => row[key]);
+      let parameters = Object.keys(row).map(key => row[key]);
       console.log(`parameters=${parameters}`)
+
+      parameters = processParameters(parameters);
       tallyCommandMap[row_command].handler.apply(null, parameters);
     } else {
       console.log(`row ${row} disabled`);
