@@ -40,7 +40,7 @@ ipcMain.on('screen:start', () => {
 
   // handleSpreadsheet(`/Users/neeraj/Desktop/tally_ledger.xlsx`);
   // handleSpreadsheet(`/Users/neeraj/Desktop/tally_voucher.xlsx`);
-  handleSpreadsheet(`/Users/neeraj/Desktop/tally_vouchersplit.xlsx`);
+  // handleSpreadsheet(`/Users/neeraj/Desktop/tally_vouchersplit.xlsx`);
   // handleSpreadsheet(`/Users/neeraj/Desktop/tally_commands.xlsx`);
 });
 
