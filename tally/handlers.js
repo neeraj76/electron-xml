@@ -342,5 +342,12 @@ module.exports = {
   handleCreateLedgerGroup,
   handleCreateLedger,
   handleCreateVoucher,
-  handleCreateVoucherSplit
+  handleCreateVoucherSplit,
+  showAccounts,
+  showLedgers,
+  showLedgerGroups,
+  showBalanceSheet,
+  showProfitLoss,
+  showTrialBalance,
+  showDayBook
 }
