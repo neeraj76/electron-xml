@@ -34,9 +34,13 @@ function createWindow() {
     // win.webContents.openDevTools({ mode: 'detach' });
   }
 
-  tallyCheckServer()
-      .then(response => console.log(`response: ${JSON.stringify(response)}`))
-      .catch(error => console.error(`error: ${JSON.stringify(error)}`));
+  // setInterval
+  const tallyCheckTimer = setTimeout(() => {
+    tallyCheckServer()
+        .then(response => console.log(`response: ${JSON.stringify(response)}`))
+        .catch(error => console.error(`error: ${JSON.stringify(error)}`));
+  }, 5000);
+
 }
 
 // This method will be called when Electron has finished
