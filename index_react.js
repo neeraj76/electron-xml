@@ -34,11 +34,17 @@ function createWindow() {
     // win.webContents.openDevTools({ mode: 'detach' });
   }
 
-  // setInterval
-  const tallyCheckTimer = setTimeout(() => {
+  // setInterval, setTimeout
+  const tallyCheckTimer = setInterval(() => {
     tallyCheckServer()
-        .then(response => console.log(`response: ${JSON.stringify(response)}`))
-        .catch(error => console.error(`error: ${JSON.stringify(error)}`));
+        .then(response => {
+          console.log(`response: ${JSON.stringify(response)}`)
+          mainWindow.webContents.send('tally:server:status', response.status === 'Success');
+        })
+        .catch(error => {
+          console.error(`error: ${JSON.stringify(error)}`)
+          mainWindow.webContents.send('tally:server:status', false);
+        });
   }, 5000);
 
 }
