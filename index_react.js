@@ -35,14 +35,19 @@ function createWindow() {
   }
 
   // setInterval, setTimeout
+  const flagDebugTallyPing = false;
   const tallyCheckTimer = setInterval(() => {
     tallyCheckServer()
         .then(response => {
-          console.log(`response: ${JSON.stringify(response)}`)
+          if (flagDebugTallyPing) {
+            console.log(`response: ${JSON.stringify(response)}`)
+          }
           mainWindow.webContents.send('tally:server:status', response.status === 'Success');
         })
         .catch(error => {
-          console.error(`error: ${JSON.stringify(error)}`)
+          if (flagDebugTallyPing) {
+            console.error(`error: ${JSON.stringify(error)}`)
+          }
           mainWindow.webContents.send('tally:server:status', false);
         });
   }, 5000);
