@@ -91,8 +91,15 @@ ipcMain.on('command:list:request', (event) => {
 ipcMain.on('command:request', (event, command) => {
   console.log(`Execute command: ${command}`);
 
+  // This should be moved to a tally promise
   if (tallyCommands.includes(command)) {
-    const parameters = [];
-    tallyCommandMap[command].handler.apply(null, parameters);
+    const parameters = [{command}]
+
+    // If the command thing misbehaves then we can pass it in the parameters
+    tallyCommandMap[command].handler.apply(null, parameters)
+        .then(({response, request}) => {
+          console.log("command:request:Promise response=", response, " request=", request);
+          mainWindow.webContents.send('command:response', {request, response});
+        });
   }
 })

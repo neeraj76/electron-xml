@@ -4,7 +4,7 @@ const {
   handleCreateVoucher,
   handleCreateVoucherSplit,
   showAccounts,
-  showLedgers,
+  getLedgers,
   showLedgerGroups,
   showBalanceSheet,
   showProfitLoss,
@@ -37,7 +37,7 @@ const tallyCommandMap = {
     handler: showAccounts
   },
   "SHOW_LEDGERS": {
-    handler: showLedgers
+    handler: getLedgers
   },
   "SHOW_LEDGERGROUPS": {
     handler: showLedgerGroups

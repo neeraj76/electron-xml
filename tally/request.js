@@ -99,6 +99,7 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
             if (flagShowResponse) {
               console.log(`Response:\n${JSON.stringify(tallyResponseObj, null, 2)}`);
             }
+
             const responseObj = {
               status: 'Success',
               tallyResponse: tallyResponseObj,

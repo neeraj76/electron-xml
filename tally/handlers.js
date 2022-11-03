@@ -39,22 +39,28 @@ function showAccounts() {
   });
 }
 
-function showLedgers() {
+function getLedgers({command}) {
   const ledgerListRequest = get_ledgers_list_request();
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(ledgerListRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const ledgerResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
+            if (ledgerResponse) {
+              const ledgers = ledgerResponse.map(ledger => {
+                if (Object.keys(ledger.ISDELETED).length > 1) {
+                  // console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
+                }
+                return ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
+              })
 
-  tallyProcessRequest(ledgerListRequest, (responseObj) => {
-    const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
-    ledgers.forEach(ledger => {
-      // console.log(`Keys:${Object.keys(ledger)}`);
-      // console.log(`${ledger['$'].NAME}`)
-      if (Object.keys(ledger.ISDELETED).length > 1) {
-        // console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
-      }
-      const ledger_name = ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
-      console.log(`${ledger_name}`);
-    });
-
-    console.log(``)
+              resolve({response:ledgers, request:command});
+            }
+          }
+        })
+        // .catch((error) => {
+        //   throw error;
+        // });
   })
 }
 
@@ -344,7 +350,7 @@ module.exports = {
   handleCreateVoucher,
   handleCreateVoucherSplit,
   showAccounts,
-  showLedgers,
+  getLedgers,
   showLedgerGroups,
   showBalanceSheet,
   showProfitLoss,
