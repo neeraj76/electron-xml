@@ -6,7 +6,7 @@ const isDev = require('electron-is-dev');
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
 const { tallyCheckServer } = require("./tally/request");
-const {tallyCommands, tallyCommandMap} = require("./tally/commands");
+const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
 
 let mainWindow;
 
@@ -85,7 +85,8 @@ ipcMain.on('excel:submit', (event, files) => {
 })
 
 ipcMain.on('command:list:request', (event) => {
-  mainWindow.webContents.send('command:list:response', tallyCommands);
+  // console.log(tallyReadOnlyCommands);
+  mainWindow.webContents.send('command:list:response', tallyReadOnlyCommands);
 });
 
 ipcMain.on('command:request', (event, command) => {

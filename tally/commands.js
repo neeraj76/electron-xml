@@ -33,32 +33,45 @@ const tallyCommandMap = {
     handler: handleCreateVoucherSplit
   },
 
-  "SHOW_ACCOUNTS": {
-    handler: showAccounts
+  "ACCOUNTS": {
+    handler: showAccounts,
+    type: "get"
   },
-  "SHOW_LEDGERS": {
-    handler: getLedgers
+  "LEDGERS": {
+    handler: getLedgers,
+    type: "get"
   },
-  "SHOW_LEDGERGROUPS": {
-    handler: showLedgerGroups
+  "LEDGER_GROUPS": {
+    handler: showLedgerGroups,
+    type: "get"
   },
-  "SHOW_BALANCESHEET": {
-    handler: showBalanceSheet
+  "BALANCE_SHEET": {
+    handler: showBalanceSheet,
+    type: "get"
   },
-  "SHOW_PROFITLOSS": {
-    handler: showProfitLoss
+  "PROFIT_LOSS": {
+    handler: showProfitLoss,
+    type: "get"
   },
-  "SHOW_TRIALBALANCE": {
-    handler: showTrialBalance
+  "TRIAL_BALANCE": {
+    handler: showTrialBalance,
+    type: "get"
   },
-  "SHOW_DAYBOOK": {
-    handler: showDayBook
+  "DAY_BOOK": {
+    handler: showDayBook,
+    type: "get"
   }
 }
 
-const tallyCommands = Object.keys(tallyCommandMap)
+const tallyCommands = Object.keys(tallyCommandMap);
+const tallyReadOnlyCommands = Object.entries(tallyCommandMap)
+    .filter(([key, val]) => val.type === "get")
+    .map(([key, _]) => key);
+// const tallyReadOnlyCommands = tallyCommands;
+
 
 module.exports = {
+  tallyCommandMap,
   tallyCommands,
-  tallyCommandMap
+  tallyReadOnlyCommands
 }
