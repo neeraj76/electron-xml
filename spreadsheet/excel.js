@@ -17,15 +17,13 @@ const processExcelFile = (path, rowFunction) => {
     return;
   }
 
-  const workbook = XLSX.readFile(path);
+  const workbook = XLSX.readFile(path, {cellDates: true});
+  // const workbook = XLSX.readFile(path);
   const sheets = Object.keys(workbook.Sheets);
 
   processWorkbook(workbook, (rows) => {
     rows.forEach(row => {
       rowFunction(row);
-
-      // const xml = convertObjToXml(row);
-      // console.log(xml);
     })
   });
 

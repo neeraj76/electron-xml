@@ -72,6 +72,7 @@ const processRowTally = (row) => {
       }
 
       parameters = processParameters(parameters);
+      // Can be Temp Disabled
       tallyCommandMap[row_command].handler.apply(null, parameters);
     } else {
       if (debugRow) {

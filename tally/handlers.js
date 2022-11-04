@@ -317,11 +317,10 @@ function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amoun
 }
 
 
-function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration) {
-  const date = ExcelDateToJSDate(excel_date);
-  // console.log(`date=${date}`);
-  const reqIdStr = `Create Voucher: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
-  const createVoucherRequest = create_voucher_request(voucher_type, date, debit_ledger, credit_ledger, amount, narration);
+// The data must be a javascript data instance
+function handleCreateVoucher(voucher_type, voucher_date, debit_ledger, credit_ledger, amount, narration) {
+  const reqIdStr = `Create Voucher: ${voucher_type} ${DateToStringDate(voucher_date)} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
+  const createVoucherRequest = create_voucher_request(voucher_type, voucher_date, debit_ledger, credit_ledger, amount, narration);
 
   return new Promise((resolve, reject) => {
     tallyCommandExecute(createVoucherRequest, reqIdStr)
@@ -335,10 +334,11 @@ function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledg
   });
 }
 
-function handleCreateVoucherSplit(voucher_type, excel_date, narration, debit_entries, credit_entries) {
-  const date = ExcelDateToJSDate(excel_date);
-  const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_entries} CR:${credit_entries}]`;
-  const createVoucherSplitRequest = create_vouchersplit_request(voucher_type, date, narration, debit_entries, credit_entries);
+// The data must be a javascript data instance
+function handleCreateVoucherSplit(voucher_type, voucher_date, narration, debit_entries, credit_entries) {
+  // const date = ExcelDateToJSDate(excel_date);
+  const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(voucher_date)} [DR:${debit_entries} CR:${credit_entries}]`;
+  const createVoucherSplitRequest = create_vouchersplit_request(voucher_type, voucher_date, narration, debit_entries, credit_entries);
 
   return tallyCommandExecute(createVoucherSplitRequest, reqIdStr);
 }
