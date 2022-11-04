@@ -90,7 +90,7 @@ ipcMain.on('command:list:request', (event) => {
 });
 
 ipcMain.on('command:tally:request', (event, command) => {
-  console.log(`${event}: Execute command: ${command}`);
+  console.log(`Tally Request: ${command}`);
 
   // This should be moved to a tally promise
   if (tallyCommands.includes(command)) {
@@ -103,5 +103,73 @@ ipcMain.on('command:tally:request', (event, command) => {
           mainWindow.webContents.send('command:response', {request, response});
         });
   }
-  
+})
+
+const verifyBankTransaction = (bankTransaction) => {
+  return new Promise((resolve, reject) => {
+    console.log(JSON.stringify(bankTransaction));
+    // (voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration)
+    if ('Category' in bankTransaction) {
+      const voucher_params = ['Payment', 44652, ""]
+
+    } else {
+      reject("Category is missing")
+    }
+  });
+}
+
+// Need bank name for which we have the statement
+// Make sure the bank name is added in the ledgers with parent as bank accounts
+// We need the conversions in the renderer before the call is made.
+const addBankTransactionToTally = (bankTransaction) => {
+  return new Promise((resolve, reject) => {
+    // console.log(JSON.stringify(bankTransaction));
+    // (voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration)
+    if ('Category' in bankTransaction) {
+
+      const voucher_params = ['Payment', 44652, "Conveyance", "Bank of India", 900, "Sample Transaction"]
+      tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
+          .then(({response, request}) => {
+            console.log("command:request:Promise response=", response, " request=", request);
+            mainWindow.webContents.send('command:response', {request, response});
+            // resolve()
+          });
+
+    } else {
+      reject("Category is missing")
+    }
+  });
+}
+
+ipcMain.on('command:request', (event, {command, data}) => {
+  let response;
+
+  if (command == 'ADD_BANK_TRANSACTIONS') {
+    data.map(item => {
+      console.log(item);
+      addBankTransactionToTally(item)
+          .then(response => {
+            console.log("Added successfully");
+          })
+          .catch(error => {
+            console.log(error);
+          })
+    })
+
+  } else if (command == 'VERIFY_BANK_TRANSACTIONS') {
+    response = data.map(item => {
+      // console.log(item);
+      return {
+        ...item,
+        verification: {
+          status: "ok",
+          reason: ""
+        }
+      }
+    })
+  } else {
+    console.log(`Command '${command}' not supported`)
+  }
+
+  mainWindow.webContents.send('command:response', {command, response});
 })

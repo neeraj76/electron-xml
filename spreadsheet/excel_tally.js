@@ -1,7 +1,7 @@
 const { tallyCommands, tallyCommandMap } = require('../tally/commands');
 
 const debugRow = false;
-const debugParameters = false;
+const debugParameters = true;
 
 const processParameters = (params) => {
   if (debugParameters) {
