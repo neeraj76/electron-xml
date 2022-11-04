@@ -57,30 +57,31 @@ function getLedgers({command}) {
               resolve({response:ledgers, request:command});
             }
           }
-        })
-        // .catch((error) => {
-        //   throw error;
-        // });
+        });
   })
 }
 
-function showLedgerGroups() {
+function showLedgerGroups(command) {
   const ledgerListRequest = get_ledger_groups_list_request();
 
-  tallyProcessRequest(ledgerListRequest, (responseObj) => {
-    const ledgers = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER
-    ledgers.forEach(ledger => {
-      // console.log(`Keys:${Object.keys(ledger)}`);
-      // console.log(`${ledger['$'].NAME}`)
-      if (Object.keys(ledger.ISDELETED).length > 1) {
-        // console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
-      }
-      const ledger_name = ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
-      console.log(`${ledger_name}`);
-    });
+  return new Promise((resolve, reject) => {
+    tallyProcessRequest(ledgerListRequest, (responseObj) => {
+      const groupResponse = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].GROUP;
+      // console.log("collection.GROUP[0] keys=", Object.keys(collection.GROUP[0]));
+      // console.log(`GROUP[0]=${JSON.stringify(collection.GROUP[0], null, 2)}`)
 
-    console.log(``)
-  })
+      if (groupResponse) {
+        const groups = groupResponse.map(ledgerGroup => {
+          
+          const groupName = ledgerGroup['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
+          console.log(`${groupName}`);
+          return groupName;
+        });
+
+        resolve({response:groups, request:command})
+      }
+    });
+  });
 }
 
 function showBalanceSheet() {

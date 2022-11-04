@@ -79,7 +79,7 @@ const get_ledger_groups_list_request = () => {
   const header = {
     ...get_version_1_export_header(),
     TYPE: "COLLECTION",
-    ID: "List of Ledgers"
+    ID: "List of Groups"
   }
 
   const body = {
