@@ -110,7 +110,7 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
           });
         })
         .catch((error) => {
-          console.log(error);
+          console.log("tallyProcessRequestPromise", error);
           console.log('Make sure the Tally Application is running and is reachable on the network');
           const errorObj = {
             status: 'Failed',

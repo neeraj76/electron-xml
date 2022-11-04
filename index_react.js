@@ -47,7 +47,7 @@ function createWindow() {
         })
         .catch(error => {
           if (flagDebugTallyPing) {
-            console.error(`error: ${JSON.stringify(error)}`)
+            console.error(`tallyCheckTimer: error: ${JSON.stringify(error)}`)
           }
           mainWindow.webContents.send('tally:server:status', false);
         });
@@ -99,7 +99,7 @@ ipcMain.on('command:tally:request', (event, command) => {
     // If the command thing misbehaves then we can pass it in the parameters
     tallyCommandMap[command].handler.apply(null, parameters)
         .then(({response, request}) => {
-          console.log("command:request:Promise response=", response, " request=", request);
+          // console.log("command:request:Promise response=", response, " request=", request);
           mainWindow.webContents.send('command:response', {request, response});
         });
   }
@@ -129,10 +129,13 @@ const addBankTransactionToTally = (bankTransaction) => {
 
       const voucher_params = ['Payment', 44652, "Conveyance", "Bank of India", 900, "Sample Transaction"]
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
-          .then(({response, request}) => {
-            console.log("command:request:Promise response=", response, " request=", request);
-            mainWindow.webContents.send('command:response', {request, response});
+          .then((response) => {
+            console.log("addBankTransactionToTally: Response=", response);
+            mainWindow.webContents.send('command:response', response);
             // resolve()
+          })
+          .catch(error => {
+            console.log(`addBankTransactionToTally: Error: ${JSON.stringify(error)}`);
           });
 
     } else {
@@ -146,14 +149,14 @@ ipcMain.on('command:request', (event, {command, data}) => {
 
   if (command == 'ADD_BANK_TRANSACTIONS') {
     data.map(item => {
-      console.log(item);
+      // console.log(item);
       addBankTransactionToTally(item)
           .then(response => {
             console.log("Added successfully");
           })
-          .catch(error => {
-            console.log(error);
-          })
+          // .catch(error => {
+          //   console.log(error);
+          // })
     })
 
   } else if (command == 'VERIFY_BANK_TRANSACTIONS') {

@@ -206,74 +206,96 @@ function showDayBook() {
 }
 
 function parseTallyErrorObj(tallyError, requestObj, reqIdStr) {
-  console.log(`Error! ${reqIdStr}: ${tallyError}`)
+  return new Promise((resolve, reject) => {
+    console.log(`Error! ${reqIdStr}: ${tallyError}`)
+    resolve(tallyError);
+  })
+
 }
 
 function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
-  let data;
-  try {
-    data = tallyResponse.ENVELOPE.BODY[0].DATA[0];
-  } catch (e) {
-    console.error(`The response is not to a tally show command`);
-  }
-
-  if (data === undefined) {
-    data = tallyResponse.RESPONSE;
-    console.log(`${data}`);
-  } else {
-    const keys = Object.keys(data);
-
-    if (keys.includes('IMPORTRESULT')) {
-      const result = data.IMPORTRESULT[0];
-
-      // traverse(result, 0);
-      if (result.CREATED == 1) {
-        console.log(`${reqIdStr}: Created Successfully`);
-      } else if (result.ALTERED == 1) {
-        console.log(`${reqIdStr}: Modified Successfully`);
-      } else if (result.DELETED == 1) {
-        console.log(`${reqIdStr}: Deleted Successfully`);
-      } else {
-        console.log(`${reqIdStr}: Repsonse traversed`)
-        traverse(result, 0);
-      }
-
-
-      if (flagShowDesc) {
-        const desc = tallyResponse.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
-        traverse(desc, 0);
-      }
-    } else if (keys.includes('LINEERROR')) {
-      const error = data.LINEERROR[0];
-      console.error(`TallyError: ${error} for request '${reqIdStr}'`);
-    } else {
-      throw "Tally Response to be supported"
+  return new Promise((resolve, reject) =>{
+    let data;
+    try {
+      data = tallyResponse.ENVELOPE.BODY[0].DATA[0];
+    } catch (e) {
+      console.error(`The response is not to a tally show command`);
     }
-  }
+
+    if (data === undefined) {
+      data = tallyResponse.RESPONSE;
+      console.log(`${data}`);
+    } else {
+      const keys = Object.keys(data);
+
+      if (keys.includes('IMPORTRESULT')) {
+        const result = data.IMPORTRESULT[0];
+
+        // traverse(result, 0);
+        if (result.CREATED == 1) {
+          console.log(`${reqIdStr}: Created Successfully`);
+        } else if (result.ALTERED == 1) {
+          console.log(`${reqIdStr}: Modified Successfully`);
+        } else if (result.DELETED == 1) {
+          console.log(`${reqIdStr}: Deleted Successfully`);
+        } else {
+          console.log(`${reqIdStr}: Repsonse traversed`)
+          traverse(result, 0);
+        }
+
+        if (flagShowDesc) {
+          const desc = tallyResponse.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
+          traverse(desc, 0);
+        }
+        resolve(result)
+      } else if (keys.includes('LINEERROR')) {
+        const error = data.LINEERROR[0];
+        console.error(`TallyError: ${error} for request '${reqIdStr}'`);
+        // reject(error);
+        resolve(error);
+      } else {
+        throw "Tally Response to be supported"
+      }
+    }
+  });
 }
 
+// Need to make a promise out of this
 function tallyCommandExecute(commandRequest, reqIdStr) {
-  tallyProcessRequestPromise(commandRequest, reqIdStr)
-      .then(({status, tallyResponse, requestObj, reqIdStr}) => {
-        parseTallyResponseObj(tallyResponse, requestObj, reqIdStr);
-      })
-      .catch(({status, reason, tallyError, requestObj, reqIdStr}) => {
-        parseTallyErrorObj(tallyError, requestObj, reqIdStr);
-      });
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(commandRequest, reqIdStr)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          console.log(`tallyCommandExecute: tallyResponse=${tallyResponse}`);
+          // This could be culprit
+          parseTallyResponseObj(tallyResponse, requestObj, reqIdStr)
+              .then(response => {
+                console.log("tallyCommandExecute:Response is parsed");
+                resolve(response);
+              })
+              .catch(error => {
+                console.log("tallyCommandExecute:Response Error in parsing");
+              });
+        })
+        .catch(({status, reason, tallyError, requestObj, reqIdStr}) => {
+          // parseTallyErrorObj(tallyError, requestObj, reqIdStr);
+          console.log(`tallyCommandExecute: tallyError=${tallyError}`);
+          // throw tallyError;
+        });
+  });
 }
 
 function handleCreateLedgerGroup(ledger_group_name, parent_ledger_group_name) {
   const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
   const createLedgerGroupsRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
 
-  tallyCommandExecute(createLedgerGroupsRequest, reqIdStr);
+  return tallyCommandExecute(createLedgerGroupsRequest, reqIdStr);
 }
 
 function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amount) {
   const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}]`;
   const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
 
-  tallyCommandExecute(createLedgersRequest, reqIdStr);
+  return tallyCommandExecute(createLedgersRequest, reqIdStr);
 }
 
 
@@ -283,7 +305,16 @@ function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledg
   const reqIdStr = `Create Voucher: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
   const createVoucherRequest = create_voucher_request(voucher_type, date, debit_ledger, credit_ledger, amount, narration);
 
-  tallyCommandExecute(createVoucherRequest, reqIdStr);
+  return new Promise((resolve, reject) => {
+    tallyCommandExecute(createVoucherRequest, reqIdStr)
+        .then(response => {
+          console.log(`handleCreateVoucher:Response ${response}`);
+          resolve(response);
+        })
+        .catch(error => {
+          console.log(`handleCreateVoucher:Error ${error}`);
+        });
+  });
 }
 
 function handleCreateVoucherSplit(voucher_type, excel_date, narration, debit_entries, credit_entries) {
@@ -291,7 +322,7 @@ function handleCreateVoucherSplit(voucher_type, excel_date, narration, debit_ent
   const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(date)} [DR:${debit_entries} CR:${credit_entries}]`;
   const createVoucherSplitRequest = create_vouchersplit_request(voucher_type, date, narration, debit_entries, credit_entries);
 
-  tallyCommandExecute(createVoucherSplitRequest, reqIdStr);
+  return tallyCommandExecute(createVoucherSplitRequest, reqIdStr);
 }
 
 function handleCreateUnitName(unit_name) {
