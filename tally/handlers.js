@@ -61,7 +61,7 @@ function getLedgers({command}) {
   })
 }
 
-function showLedgerGroups(command) {
+function getLedgerGroups(command) {
   const ledgerListRequest = get_ledger_groups_list_request();
 
   return new Promise((resolve, reject) => {
@@ -72,7 +72,7 @@ function showLedgerGroups(command) {
 
       if (groupResponse) {
         const groups = groupResponse.map(ledgerGroup => {
-          
+
           const groupName = ledgerGroup['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
           console.log(`${groupName}`);
           return groupName;
@@ -369,7 +369,7 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
 function commandTester() {
   // showAccounts();
   // showLedgers();
-  showLedgerGroups();
+  getLedgerGroups();
   // showBalanceSheet();
   // showProfitLoss();
   // showTrialBalance();
@@ -400,7 +400,7 @@ module.exports = {
   handleCreateVoucherSplit,
   showAccounts,
   getLedgers,
-  showLedgerGroups,
+  getLedgerGroups,
   showBalanceSheet,
   showProfitLoss,
   showTrialBalance,
