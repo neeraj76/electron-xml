@@ -89,8 +89,8 @@ ipcMain.on('command:list:request', (event) => {
   mainWindow.webContents.send('command:list:response', tallyReadOnlyCommands);
 });
 
-ipcMain.on('command:request', (event, command) => {
-  console.log(`Execute command: ${command}`);
+ipcMain.on('command:tally:request', (event, command) => {
+  console.log(`${event}: Execute command: ${command}`);
 
   // This should be moved to a tally promise
   if (tallyCommands.includes(command)) {
@@ -103,4 +103,5 @@ ipcMain.on('command:request', (event, command) => {
           mainWindow.webContents.send('command:response', {request, response});
         });
   }
+  
 })
