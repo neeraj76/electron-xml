@@ -210,10 +210,23 @@ function parseTallyErrorObj(tallyError, requestObj, reqIdStr) {
     console.log(`Error! ${reqIdStr}: ${tallyError}`)
     resolve(tallyError);
   })
-
 }
 
 function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
+  const responseCodeMap = {
+    "CREATED": {type: "integer"},
+    "ALTERED": {type: "integer"},
+    "DELETED": {type: "integer"},
+    "LASTVCHID": {type: "integer"},
+    "LASTMID": {type: "integer"},
+    "COMBINED": {type: "integer"},
+    "IGNORED": {type: "integer"},
+    "ERRORS": {type: "integer"},
+    "CANCELLED": {type: "integer"},
+    "VCHNUMBER": {type: "integer"},
+    "LINEERROR": {type: "text"}
+  };
+
   return new Promise((resolve, reject) =>{
     let data;
     try {
@@ -229,19 +242,15 @@ function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
       const keys = Object.keys(data);
 
       if (keys.includes('IMPORTRESULT')) {
-        const result = data.IMPORTRESULT[0];
+        const  importResult = data.IMPORTRESULT[0];
 
-        // traverse(result, 0);
-        if (result.CREATED == 1) {
-          console.log(`${reqIdStr}: Created Successfully`);
-        } else if (result.ALTERED == 1) {
-          console.log(`${reqIdStr}: Modified Successfully`);
-        } else if (result.DELETED == 1) {
-          console.log(`${reqIdStr}: Deleted Successfully`);
-        } else {
-          console.log(`${reqIdStr}: Repsonse traversed`)
-          traverse(result, 0);
-        }
+        const new_keypair = Object.entries(importResult)
+            .filter(([key, val]) => Object.keys(responseCodeMap).includes(key))
+            .map(([key, val]) =>
+                [key, responseCodeMap[key].type === "integer" ? parseInt(val[0]) : val[0]]
+            );
+        const result = Object.fromEntries(new_keypair);
+
 
         if (flagShowDesc) {
           const desc = tallyResponse.ENVELOPE.BODY[0].DESC[0].CMPINFO[0];
@@ -249,10 +258,14 @@ function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
         }
         resolve(result)
       } else if (keys.includes('LINEERROR')) {
-        const error = data.LINEERROR[0];
-        console.error(`TallyError: ${error} for request '${reqIdStr}'`);
-        // reject(error);
-        resolve(error);
+        const new_keypair = Object.entries(data)
+            .filter(([key, val]) => Object.keys(responseCodeMap).includes(key))
+            .map(([key, val]) =>
+                [key, responseCodeMap[key].type === "integer" ? parseInt(val[0]) : val[0]]
+            );
+        const result = Object.fromEntries(new_keypair);
+
+        resolve(result);
       } else {
         throw "Tally Response to be supported"
       }
@@ -265,19 +278,23 @@ function tallyCommandExecute(commandRequest, reqIdStr) {
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(commandRequest, reqIdStr)
         .then(({status, tallyResponse, requestObj, reqIdStr}) => {
-          console.log(`tallyCommandExecute: tallyResponse=${tallyResponse}`);
+          // console.log(`tallyCommandExecute: tallyResponse=${tallyResponse}`);
           // This could be culprit
           parseTallyResponseObj(tallyResponse, requestObj, reqIdStr)
               .then(response => {
-                console.log("tallyCommandExecute:Response is parsed");
-                resolve(response);
+                // console.log(`tallyCommandExecute: response=${JSON.stringify(response, null, 2)}`);
+                if (response.ERRORS > 0) {
+                  reject({status: 'ERROR', reason: response.LINEERROR, response})
+                }
+
+                resolve({status: 'SUCCESS', response});
               })
-              .catch(error => {
-                console.log("tallyCommandExecute:Response Error in parsing");
-              });
+              // .catch(error => {
+              //   console.log(`tallyCommandExecute: error=${JSON.stringify(error, null, 2)}`);
+              //   console.log("tallyCommandExecute:Response Error in parsing");
+              // });
         })
         .catch(({status, reason, tallyError, requestObj, reqIdStr}) => {
-          // parseTallyErrorObj(tallyError, requestObj, reqIdStr);
           console.log(`tallyCommandExecute: tallyError=${tallyError}`);
           // throw tallyError;
         });
@@ -308,11 +325,11 @@ function handleCreateVoucher(voucher_type, excel_date, debit_ledger, credit_ledg
   return new Promise((resolve, reject) => {
     tallyCommandExecute(createVoucherRequest, reqIdStr)
         .then(response => {
-          console.log(`handleCreateVoucher:Response ${response}`);
+          console.log(`handleCreateVoucher:Response ${JSON.stringify(response, null, 2)}`);
           resolve(response);
         })
         .catch(error => {
-          console.log(`handleCreateVoucher:Error ${error}`);
+          console.log(`handleCreateVoucher:Error ${JSON.stringify(error, null, 2)}`);
         });
   });
 }
