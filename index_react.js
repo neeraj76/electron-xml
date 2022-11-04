@@ -127,7 +127,7 @@ const addBankTransactionToTally = (bankTransaction) => {
     // (voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration)
     if ('Category' in bankTransaction) {
 
-      const voucher_params = ['Payment', 44652, bankTransaction.Category, "Bank of India", 900, "Sample Transaction"]
+      const voucher_params = ['Payment', new Date("2022-04-02"), bankTransaction.Category, "Bank of India", 900, "Sample Transaction"]
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
           .then((response) => {
             // console.log("addBankTransactionToTally: Response=", response);
