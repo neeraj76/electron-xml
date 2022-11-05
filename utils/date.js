@@ -25,9 +25,14 @@ const DateFromString = (dateStr, format='ISO-Date') => {
   return parseDate(dateStr, format, new Date());
 }
 
+const isDate = (val) => {
+  return val instanceof Date && !isNaN(val)
+}
+
 module.exports = {
   DateToString,
   DateToStringDate,
   DateToStringTime,
-  DateFromString
+  DateFromString,
+  isDate
 }
