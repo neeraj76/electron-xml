@@ -14,7 +14,7 @@ const {
   create_stock_group_request,
   create_stock_item_request
 } = require("./messages");
-const { tallyProcessRequest, tallyProcessRequestPromise } = require("./request");
+const { tallyProcessRequest, tallyProcessRequestPromise } = require("./api");
 const { ExcelDateToJSDate, dateTallyFormat } = require('../spreadsheet/excel_date');
 const { DateToStringDate } = require('../utils/date');
 

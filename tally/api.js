@@ -1,7 +1,7 @@
 const {convertObjToXml, convertXmlToObj} = require("../xml/convert");
 const {tallyApiCall} = require("../services/api");
 
-const flagShowReqId = false;
+const flagShowReqId = true;
 const flagShowRequest = false;
 const flagShowResponse = false;
 const flagShowXml = false;

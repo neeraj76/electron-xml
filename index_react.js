@@ -5,15 +5,16 @@ const isDev = require('electron-is-dev');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
-const { tallyCheckServer } = require("./tally/request");
+const { tallyCheckServer } = require("./tally/api");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
+const {DateFromString} = require("./utils/date");
 
 let mainWindow;
 
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1500,
     height: 800,
     webPreferences: {
       nodeIntegration: true,
@@ -122,12 +123,29 @@ const verifyBankTransaction = (bankTransaction) => {
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
 const addBankTransactionToTally = (bankTransaction) => {
+  const debugFn = false;
   return new Promise((resolve, reject) => {
-    // console.log(JSON.stringify(bankTransaction));
-    // (voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration)
     if ('Category' in bankTransaction) {
+      if (debugFn) {
+        console.log(`addBankTransactionToTally: bankTransaction=${JSON.stringify(bankTransaction, null, 2)}`);
+      }
 
-      const voucher_params = ['Payment', new Date("2022-04-02"), bankTransaction.Category, "Bank of India", 900, "Sample Transaction"]
+      const transactionDate = DateFromString(bankTransaction['Transaction Date']);
+      const valueDate = DateFromString(bankTransaction['Value Date']);
+      if (debugFn) {
+        console.log(`transactionDate=${transactionDate}`);
+        console.log(`valueDate=${valueDate}`);
+      }
+
+      // TBD: Is there a way to specify ValueDate in a voucher
+      const voucher_params = ['Payment',
+        valueDate,
+        bankTransaction.Category,
+        "Bank of India",
+        900,
+        "Sample Transaction"
+      ];
+
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
           .then((response) => {
             // console.log("addBankTransactionToTally: Response=", response);
