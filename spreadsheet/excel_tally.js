@@ -1,7 +1,7 @@
 const { tallyCommands, tallyCommandMap } = require('../tally/commands');
 
 const debugRow = false;
-const debugParameters = true;
+const debugParameters = false;
 
 const processParameters = (params) => {
   if (debugParameters) {
@@ -43,8 +43,6 @@ const processParameters = (params) => {
   return new_params;
 }
 
-
-
 const processRowTally = (row) => {
   if (debugRow) {
     console.log(`typeof(row)=${typeof row}`, row);
@@ -73,7 +71,13 @@ const processRowTally = (row) => {
 
       parameters = processParameters(parameters);
       // Can be Temp Disabled
-      tallyCommandMap[row_command].handler.apply(null, parameters);
+      tallyCommandMap[row_command].handler.apply(null, parameters)
+          .then(response => {
+            console.log(`processRowTally: response=${JSON.stringify(response)}`);
+          })
+          .catch(error => {
+            console.log(`processRowTally: error=${JSON.stringify(error)}`);
+          });
     } else {
       if (debugRow) {
         console.log(`row ${row} disabled`);

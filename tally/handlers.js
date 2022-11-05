@@ -279,26 +279,19 @@ function tallyCommandExecute(commandRequest, reqIdStr) {
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(commandRequest, reqIdStr)
         .then(({status, tallyResponse, requestObj, reqIdStr}) => {
-          // console.log(`tallyCommandExecute: tallyResponse=${tallyResponse}`);
-          // This could be culprit
           parseTallyResponseObj(tallyResponse, requestObj, reqIdStr)
-              .then(response => {
-                // console.log(`tallyCommandExecute: response=${JSON.stringify(response, null, 2)}`);
-                if (response.ERRORS > 0) {
-                  reject({status: 'ERROR', reason: response.LINEERROR, tallyError:response})
+              .then(parseResponse => {
+                // console.log(`tallyCommandExecute: response=${JSON.stringify(parseResponse, null, 2)}`);
+                if (parseResponse.ERRORS > 0 || Object.keys(parseResponse).includes('LINEERROR')) {
+                  reject({status: 'ERROR', reason: parseResponse.LINEERROR, tallyError:parseResponse})
                 }
 
-                resolve({status: 'SUCCESS', tallyResponse:response});
+                resolve({status: 'SUCCESS', tallyResponse:parseResponse});
               })
-              // .catch(error => {
-              //   console.log(`tallyCommandExecute: error=${JSON.stringify(error, null, 2)}`);
-              //   console.log("tallyCommandExecute:Response Error in parsing");
-              // });
         })
         .catch(({status, reason, tallyError, requestObj, reqIdStr}) => {
-          console.log(`tallyCommandExecute: tallyError=${tallyError}`);
+          // console.log(`tallyCommandExecute: tallyError=${tallyError}`);
           reject({status: 'ERROR', reason: 'error communicating with tally', tallyError})
-          // throw tallyError;
         });
   });
 }
