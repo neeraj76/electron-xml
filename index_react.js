@@ -142,13 +142,25 @@ const addBankTransactionToTally = (bankTransaction) => {
 
       // TBD: Is there a way to specify ValueDate in a voucher
       // Now we can integrate the actual voucher
+      let voucher_type;
+      let voucher_amount;
+      if (Object.keys(bankTransaction).includes('Debit')) {
+        voucher_type = 'Payment';
+        voucher_amount = bankTransaction.Debit;
+      } else if (Object.keys(bankTransaction).includes('Credit')) {
+        voucher_type = 'Receipt';
+        voucher_amount = bankTransaction.Credit;
+      } else {
+        throw `Either of 'Debit' or 'Credit' has to be present.`
+      }
+
       const voucher_params = [
-        'Payment',
+        voucher_type,
         valueDate,
         bankTransaction.Category,
-        "Bank of India",
-        900,
-        "Sample Transaction"
+        bankTransaction.Bank,
+        voucher_amount,
+        bankTransaction.Description
       ];
 
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
