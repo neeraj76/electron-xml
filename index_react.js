@@ -126,7 +126,7 @@ const verifyBankTransaction = (bankTransaction) => {
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
 const addBankTransactionToTally = (bankTransaction) => {
-  const debugFn = true;
+  const debugFn = false;
   return new Promise((resolve, reject) => {
     if ('Category' in bankTransaction) {
       if (debugFn) {
@@ -173,7 +173,7 @@ const addBankTransactionToTally = (bankTransaction) => {
 ipcMain.on('command:vouchers:request', (event, {command, data}) => {
 
   if (command == 'ADD_BANK_TRANSACTIONS') {
-    console.log("Promise.All()");
+    // console.log("Promise.All()");
 
     const promises = data.map((row) => {
       return addBankTransactionToTally(row);
@@ -181,7 +181,7 @@ ipcMain.on('command:vouchers:request', (event, {command, data}) => {
 
     Promise.all(promises)
         .then((results) => {
-          console.log(results);
+          // console.log(results);
           mainWindow.webContents.send('command:vouchers:response', {command, results});
         })
         .catch(error => {

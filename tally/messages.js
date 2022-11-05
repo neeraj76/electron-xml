@@ -57,7 +57,7 @@ const get_accounts_list_request = () => {
   return create_export_request(header, body)
 }
 
-const get_ledgers_list_request = () => {
+const get_ledgers_names_only_list_request = () => {
   const header = {
     ...get_version_1_export_header(),
     TYPE: "COLLECTION",
@@ -70,6 +70,38 @@ const get_ledgers_list_request = () => {
         STATICVARIABLES: get_static_variables()
       }
     }
+  }
+
+  return create_export_request(header, body)
+}
+
+const get_ledgers_list_request = () => {
+  const header = {
+    ...get_version_1_export_header(),
+    TYPE: "COLLECTION",
+    ID: "Ledgers"
+  }
+
+  const body = {
+      DESC: {
+        STATICVARIABLES: get_static_variables(),
+        TDL: {
+          TDLMESSAGE: {
+            COLLECTION: {
+              '$': {
+                ISMODIFY: "No",
+                ISFIXED: "No",
+                ISINITIALIZE: "No",
+                ISOPTION: "No",
+                ISINTERNAL: "No",
+                NAME: "Ledgers"
+              },
+              TYPE: "Ledger",
+              NATIVEMETHOD: ["NAME", "PARENT"]
+            }
+          }
+        }
+      }
   }
 
   return create_export_request(header, body)

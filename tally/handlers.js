@@ -41,6 +41,7 @@ function showAccounts() {
 
 function getLedgers({command}) {
   const ledgerListRequest = get_ledgers_list_request();
+
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(ledgerListRequest)
         .then(({status, tallyResponse, requestObj, reqIdStr}) => {
@@ -48,10 +49,11 @@ function getLedgers({command}) {
             const ledgerResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
             if (ledgerResponse) {
               const ledgers = ledgerResponse.map(ledger => {
-                if (Object.keys(ledger.ISDELETED).length > 1) {
-                  // console.log(`Deleted=${JSON.stringify(ledger.ISDELETED)}`);
-                }
-                return ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
+                console.log(`ledger=${JSON.stringify(ledger, null, 2)}`);
+                return {
+                  name: ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0],
+                  parent: ledger.PARENT[0]['_']
+                };
               })
 
               resolve({response:ledgers, request:command});
