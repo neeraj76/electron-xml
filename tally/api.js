@@ -2,9 +2,9 @@ const {convertObjToXml, convertXmlToObj} = require("../xml/convert");
 const {tallyApiCall} = require("../services/api");
 
 const flagShowReqId = false;
-const flagShowRequest = true;
+const flagShowRequest = false;
 const flagShowResponse = false;
-const flagShowXml = true;
+const flagShowXml = false;
 
 const tallyCheckServerBoolean = () => {
   return new Promise(function (resolve,reject) {

@@ -126,7 +126,7 @@ const verifyBankTransaction = (bankTransaction) => {
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
 const addBankTransactionToTally = (bankTransaction) => {
-  const debugFn = false;
+  const debugFn = true;
   return new Promise((resolve, reject) => {
     if ('Category' in bankTransaction) {
       if (debugFn) {
@@ -141,7 +141,7 @@ const addBankTransactionToTally = (bankTransaction) => {
       }
 
       // TBD: Is there a way to specify ValueDate in a voucher
-
+      // Now we can integrate the actual voucher
       const voucher_params = [
         'Payment',
         valueDate,
