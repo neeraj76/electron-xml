@@ -317,16 +317,10 @@ function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amoun
   return tallyCommandExecute(createLedgersRequest, reqIdStr);
 }
 
-
-// The data must be a javascript data instance
-function handleCreateVoucher(voucher_type, voucher_date, debit_ledger, credit_ledger, amount, narration) {
-  const reqIdStr = `Create Voucher: ${voucher_type} ${DateToStringDate(voucher_date)} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
-  const createVoucherRequest = create_voucher_request(voucher_type, voucher_date, debit_ledger, credit_ledger, amount, narration);
-
+function createTallyVoucherPromise(voucherRequest, reqIdStr) {
   return new Promise((resolve, reject) => {
-    tallyCommandExecute(createVoucherRequest, reqIdStr)
+    tallyCommandExecute(voucherRequest, reqIdStr)
         .then(response => {
-          // console.log(`handleCreateVoucher:Response ${JSON.stringify(response, null, 2)}`);
           const voucherResponse = {
             status: response.status,
             voucher_id: response.tallyResponse.LASTVCHID
@@ -334,9 +328,18 @@ function handleCreateVoucher(voucher_type, voucher_date, debit_ledger, credit_le
           resolve(voucherResponse);
         })
         .catch(error => {
-          console.log(`handleCreateVoucher:Error ${JSON.stringify(error, null, 2)}`);
+          delete error.tallyError
+          reject(error);
         });
   });
+}
+
+// The data must be a javascript data instance
+function handleCreateVoucher(voucher_type, voucher_date, debit_ledger, credit_ledger, amount, narration) {
+  const reqIdStr = `Create Voucher: ${voucher_type} ${DateToStringDate(voucher_date)} [DR:${debit_ledger} CR:${credit_ledger}] ${amount}`;
+  const createVoucherRequest = create_voucher_request(voucher_type, voucher_date, debit_ledger, credit_ledger, amount, narration);
+
+  return createTallyVoucherPromise(createVoucherRequest, reqIdStr);
 }
 
 // The data must be a javascript data instance
@@ -345,7 +348,7 @@ function handleCreateVoucherSplit(voucher_type, voucher_date, narration, debit_e
   const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(voucher_date)} [DR:${debit_entries} CR:${credit_entries}]`;
   const createVoucherSplitRequest = create_vouchersplit_request(voucher_type, voucher_date, narration, debit_entries, credit_entries);
 
-  return tallyCommandExecute(createVoucherSplitRequest, reqIdStr);
+  return createTallyVoucherPromise(createVoucherSplitRequest, reqIdStr);
 }
 
 function handleCreateUnitName(unit_name) {
