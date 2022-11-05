@@ -9,6 +9,9 @@ const { tallyCheckServer } = require("./tally/api");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
 const {DateFromString} = require("./utils/date");
 
+// Stephen Grider's udemy electron video
+const _ = require('lodash');
+
 let mainWindow;
 
 function createWindow() {
@@ -138,7 +141,9 @@ const addBankTransactionToTally = (bankTransaction) => {
       }
 
       // TBD: Is there a way to specify ValueDate in a voucher
-      const voucher_params = ['Payment',
+      
+      const voucher_params = [
+        'Payment',
         valueDate,
         bankTransaction.Category,
         "Bank of India",
@@ -148,12 +153,14 @@ const addBankTransactionToTally = (bankTransaction) => {
 
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
           .then((response) => {
-            console.log("addBankTransactionToTally: Response=", response);
-            mainWindow.webContents.send('command:response', response);
+            // console.log("addBankTransactionToTally: Response=", response);
+            // mainWindow.webContents.send('command:response', response);
             // resolve()
+            resolve(response);
           })
           .catch(error => {
-            console.log(`addBankTransactionToTally: Error: ${JSON.stringify(error)}`);
+            // console.log(`addBankTransactionToTally: Error: ${JSON.stringify(error)}`);
+            reject(error);
           });
 
     } else {
@@ -162,35 +169,25 @@ const addBankTransactionToTally = (bankTransaction) => {
   });
 }
 
-ipcMain.on('command:request', (event, {command, data}) => {
-  let response;
+ipcMain.on('command:vouchers:request', (event, {command, data}) => {
 
   if (command == 'ADD_BANK_TRANSACTIONS') {
-    data.map(item => {
-      // console.log(item);
-      addBankTransactionToTally(item)
-          .then(response => {
-            console.log("Added successfully");
-          })
-          // .catch(error => {
-          //   console.log(error);
-          // })
-    })
+    console.log("Promise.All()");
 
-  } else if (command == 'VERIFY_BANK_TRANSACTIONS') {
-    response = data.map(item => {
-      // console.log(item);
-      return {
-        ...item,
-        verification: {
-          status: "ok",
-          reason: ""
-        }
-      }
-    })
+    const promises = data.map((row) => {
+      return addBankTransactionToTally(row);
+    });
+
+    Promise.all(promises)
+        .then((results) => {
+          console.log(results);
+          mainWindow.webContents.send('command:vouchers:response', {command, results});
+        })
+        .catch(error => {
+          console.log(error);
+        });
   } else {
     console.log(`Command '${command}' not supported`)
   }
 
-  mainWindow.webContents.send('command:response', {command, response});
 })
