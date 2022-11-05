@@ -285,10 +285,10 @@ function tallyCommandExecute(commandRequest, reqIdStr) {
               .then(response => {
                 // console.log(`tallyCommandExecute: response=${JSON.stringify(response, null, 2)}`);
                 if (response.ERRORS > 0) {
-                  reject({status: 'ERROR', reason: response.LINEERROR, response})
+                  reject({status: 'ERROR', reason: response.LINEERROR, tallyError:response})
                 }
 
-                resolve({status: 'SUCCESS', response});
+                resolve({status: 'SUCCESS', tallyResponse:response});
               })
               // .catch(error => {
               //   console.log(`tallyCommandExecute: error=${JSON.stringify(error, null, 2)}`);
@@ -297,6 +297,7 @@ function tallyCommandExecute(commandRequest, reqIdStr) {
         })
         .catch(({status, reason, tallyError, requestObj, reqIdStr}) => {
           console.log(`tallyCommandExecute: tallyError=${tallyError}`);
+          reject({status: 'ERROR', reason: 'error communicating with tally', tallyError})
           // throw tallyError;
         });
   });
@@ -325,8 +326,12 @@ function handleCreateVoucher(voucher_type, voucher_date, debit_ledger, credit_le
   return new Promise((resolve, reject) => {
     tallyCommandExecute(createVoucherRequest, reqIdStr)
         .then(response => {
-          console.log(`handleCreateVoucher:Response ${JSON.stringify(response, null, 2)}`);
-          resolve(response);
+          // console.log(`handleCreateVoucher:Response ${JSON.stringify(response, null, 2)}`);
+          const voucherResponse = {
+            status: response.status,
+            voucher_id: response.tallyResponse.LASTVCHID
+          }
+          resolve(voucherResponse);
         })
         .catch(error => {
           console.log(`handleCreateVoucher:Error ${JSON.stringify(error, null, 2)}`);

@@ -148,7 +148,7 @@ const addBankTransactionToTally = (bankTransaction) => {
 
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
           .then((response) => {
-            // console.log("addBankTransactionToTally: Response=", response);
+            console.log("addBankTransactionToTally: Response=", response);
             mainWindow.webContents.send('command:response', response);
             // resolve()
           })
