@@ -47,13 +47,13 @@ function createWindow() {
           if (flagDebugTallyPing) {
             console.log(`response: ${JSON.stringify(response)}`)
           }
-          mainWindow.webContents.send('tally:server:status', response.status === 'Success');
+          mainWindow.webContents.send('tally:server:status:response', response.status === 'Success');
         })
         .catch(error => {
           if (flagDebugTallyPing) {
             console.error(`tallyCheckTimer: error: ${JSON.stringify(error)}`)
           }
-          mainWindow.webContents.send('tally:server:status', false);
+          mainWindow.webContents.send('tally:server:status:response', false);
         });
   }, 5000);
 
