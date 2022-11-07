@@ -57,9 +57,19 @@ function getLedgers({command}) {
               })
 
               resolve({response:ledgers, request:command});
+            } else {
+              // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+              // throw 'this should be handled';
+              throw 'Error! in getting ledgers. Verify that a company is selected.';
             }
           }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
         });
+
   })
 }
 
@@ -81,6 +91,8 @@ function getLedgerGroups(command) {
         });
 
         resolve({response:groups, request:command})
+      } else {
+        throw 'Error! in getting groups. Verify that a company is selected.'
       }
     });
   });

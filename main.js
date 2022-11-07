@@ -39,24 +39,16 @@ function createWindow() {
     // win.webContents.openDevTools({ mode: 'detach' });
   }
 
-  // setInterval, setTimeout
-  const flagDebugTallyPing = false;
+  // Start a pingTimer
   const tallyCheckTimer = setInterval(() => {
     tallyCheckServer()
         .then(response => {
-          if (flagDebugTallyPing) {
-            console.log(`response: ${JSON.stringify(response)}`)
-          }
-          mainWindow.webContents.send('tally:server:status:response', response.status === 'Success');
+          mainWindow.webContents.send('tally:server:status:health', response.status === 'Success');
         })
         .catch(error => {
-          if (flagDebugTallyPing) {
-            console.error(`tallyCheckTimer: error: ${JSON.stringify(error)}`)
-          }
-          mainWindow.webContents.send('tally:server:status:response', false);
+          mainWindow.webContents.send('tally:server:status:health', false);
         });
-  }, 5000);
-
+  }, 10000);
 }
 
 // This method will be called when Electron has finished
@@ -79,6 +71,16 @@ app.on('activate', () => {
   }
 });
 
+ipcMain.on('tally:server:status:request', (event,) => {
+  tallyCheckServer()
+      .then(response => {
+        mainWindow.webContents.send('tally:server:status:response', response.status === 'Success');
+      })
+      .catch(error => {
+        mainWindow.webContents.send('tally:server:status:response', false);
+      });
+});
+
 ipcMain.on('excel:submit', (event, files) => {
   files.forEach(filePath => {
     console.log(`Received File:`, filePath);
@@ -86,7 +88,7 @@ ipcMain.on('excel:submit', (event, files) => {
   });
 
   mainWindow.webContents.send('excel:processed', files);
-})
+});
 
 ipcMain.on('command:list:request', (event) => {
   // console.log(tallyReadOnlyCommands);
@@ -105,6 +107,9 @@ ipcMain.on('command:tally:request', (event, command) => {
         .then(({response, request}) => {
           // console.log("command:request:Promise response=", response, " request=", request);
           mainWindow.webContents.send('command:response', {request, response});
+        })
+        .catch(error => {
+          console.log(`command:tally:request  command=${command}`, error);
         });
   }
 })
