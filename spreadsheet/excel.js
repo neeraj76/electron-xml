@@ -21,11 +21,15 @@ const processExcelFile = (path, rowFunction) => {
   // const workbook = XLSX.readFile(path);
   const sheets = Object.keys(workbook.Sheets);
 
-  processWorkbook(workbook, (rows) => {
-    rows.forEach(row => {
-      rowFunction(row);
-    })
-  });
+  try {
+    processWorkbook(workbook, (rows) => {
+      rows.forEach(row => {
+        rowFunction(row);
+      })
+    });
+  } catch (e) {
+    console.log('Error processing the excel', e);
+  }
 
   return sheets;
 }

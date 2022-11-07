@@ -15,8 +15,8 @@ app.on('ready', () => {
       contextIsolation: false,
     }
   });
-  // mainWindow.loadURL(`file://${__dirname}/index.html`)
-  mainWindow.loadFile('./index.html')
+  // mainWindow.loadURL(`file://${__dirname}/local.html`)
+  mainWindow.loadFile('./local.html')
       .then(response => {
         console.log(`File loaded successfully for mainWindow`);
       })

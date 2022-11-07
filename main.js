@@ -26,12 +26,12 @@ function createWindow() {
     },
   });
 
-  // and load the index.html of the app.
-  // win.loadFile("index.html");
+  // and load the local.html of the app.
+  // win.loadFile("local.html");
   mainWindow.loadURL(
       isDev
           ? 'http://localhost:3000'
-          : `file://${path.join(__dirname, '../build/index.html')}`
+          : `file://${path.join(__dirname, '../index.html')}`
   );
 
   // Open the DevTools.
