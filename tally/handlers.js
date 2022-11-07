@@ -74,27 +74,35 @@ function getLedgers({command}) {
 }
 
 function getLedgerGroups(command) {
-  const ledgerListRequest = get_ledger_groups_list_request();
+  const ledgerGroupsListRequest = get_ledger_groups_list_request();
 
   return new Promise((resolve, reject) => {
-    tallyProcessRequest(ledgerListRequest, (responseObj) => {
-      const groupResponse = responseObj.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].GROUP;
-      // console.log("collection.GROUP[0] keys=", Object.keys(collection.GROUP[0]));
-      // console.log(`GROUP[0]=${JSON.stringify(collection.GROUP[0], null, 2)}`)
+    tallyProcessRequestPromise(ledgerGroupsListRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const groupResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
+            if (groupResponse) {
+              const groups = groupResponse.map(group => {
+                console.log(`ledger=${JSON.stringify(group, null, 2)}`);
+                return {
+                  name: group['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0],
+                  parent: group.PARENT[0]['_']
+                };
+              })
 
-      if (groupResponse) {
-        const groups = groupResponse.map(ledgerGroup => {
-
-          const groupName = ledgerGroup['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0];
-          console.log(`${groupName}`);
-          return groupName;
+              resolve({response:groups, request:command});
+            } else {
+              // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+              // throw 'this should be handled';
+              throw 'Error! in getting groups. Verify that a company is selected.';
+            }
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
         });
-
-        resolve({response:groups, request:command})
-      } else {
-        throw 'Error! in getting groups. Verify that a company is selected.'
-      }
-    });
   });
 }
 
