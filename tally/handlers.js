@@ -24,18 +24,45 @@ const flagShowArray = false;
 const indentationLen = 4;
 const propNameLen = 30;
 
-function getAccounts() {
+function getAccounts({command}) {
   const accountListRequest = get_accounts_list_request();
-  tallyProcessRequest(accountListRequest, (responseObj) => {
-    console.log(`Header: ${JSON.stringify(responseObj.ENVELOPE.HEADER, null, 2)}`)
 
-    const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE
-    messages.forEach(msg => {
-      // console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
-      if (Object.keys(msg).includes('VOUCHERTYPE')) {
-        console.log(`VoucherType: ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
-      }
-    });
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(accountListRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+
+
+            const messages = tallyResponse.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
+            messages.forEach(msg => {
+              console.log(`msg.keys=${Object.keys(msg)}`);
+            })
+
+            // console.log(`messages=${JSON.stringify(messages, null, 2)}`);
+            // const accounts = messages.map(msg => {
+            //   // console.log(`Msg Keys: ${Object.keys(msg)}  ${Object.keys(msg['$'])}`);
+            //   if (Object.keys(msg).includes('VOUCHERTYPE')) {
+            //     console.log(`VoucherType: ${msg.VOUCHERTYPE[0]['$']['NAME']}`)
+            //   }
+            //   return msg.VOUCHERTYPE[0]['$']['NAME'];
+            // });
+
+            resolve({response:messages, request:command});
+          } else {
+            // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+            // throw 'this should be handled';
+            throw 'Error! in getting accounts. Verify that a company is selected.';
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
+
+  tallyProcessRequest(accountListRequest, (responseObj) => {
+
   });
 }
 
@@ -49,7 +76,7 @@ function getLedgers({command}) {
             const ledgerResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
             if (ledgerResponse) {
               const ledgers = ledgerResponse.map(ledger => {
-                console.log(`ledger=${JSON.stringify(ledger, null, 2)}`);
+                // console.log(`ledger=${JSON.stringify(ledger, null, 2)}`);
                 return {
                   name: ledger['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0],
                   parent: ledger.PARENT[0]['_']
@@ -69,8 +96,7 @@ function getLedgers({command}) {
           // console.log(`getLedgers:catch error=${error}`);
           reject(error);
         });
-
-  })
+  });
 }
 
 function getLedgerGroups(command) {
@@ -83,7 +109,7 @@ function getLedgerGroups(command) {
             const groupResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
             if (groupResponse) {
               const groups = groupResponse.map(group => {
-                console.log(`ledger=${JSON.stringify(group, null, 2)}`);
+                // console.log(`ledger=${JSON.stringify(group, null, 2)}`);
                 return {
                   name: group['LANGUAGENAME.LIST'][0]['NAME.LIST'][0].NAME[0],
                   parent: group.PARENT[0]['_']

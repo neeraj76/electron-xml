@@ -46,6 +46,24 @@ const get_accounts_list_request = () => {
       REQUESTDESC: {
         REPORTNAME: "List of Accounts",
         STATICVARIABLES: {
+          ...get_static_variables()
+        }
+      }
+    }
+  }
+
+
+  return create_export_request(header, body)
+}
+
+const get_accounts_inventory_masters_list_request = () => {
+  const header = get_export_data_header();
+
+  const body = {
+    EXPORTDATA: {
+      REQUESTDESC: {
+        REPORTNAME: "List of Accounts",
+        STATICVARIABLES: {
           ...get_static_variables(),
           ACCOUNTTYPE: "All Inventory Masters"
         }
