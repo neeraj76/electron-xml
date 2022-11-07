@@ -3,13 +3,13 @@ const {
   handleCreateLedger,
   handleCreateVoucher,
   handleCreateVoucherSplit,
-  showAccounts,
+  getAccounts,
   getLedgers,
   getLedgerGroups,
-  showBalanceSheet,
-  showProfitLoss,
-  showTrialBalance,
-  showDayBook
+  getBalanceSheet,
+  getProfitLoss,
+  getTrialBalance,
+  getDayBook
 } = require('./handlers');
 
 // const tallyCommands = [
@@ -34,7 +34,7 @@ const tallyCommandMap = {
   },
 
   "ACCOUNTS": {
-    handler: showAccounts,
+    handler: getAccounts,
     type: "get"
   },
   "LEDGERS": {
@@ -46,19 +46,19 @@ const tallyCommandMap = {
     type: "get"
   },
   "BALANCE_SHEET": {
-    handler: showBalanceSheet,
+    handler: getBalanceSheet,
     type: "get"
   },
   "PROFIT_LOSS": {
-    handler: showProfitLoss,
+    handler: getProfitLoss,
     type: "get"
   },
   "TRIAL_BALANCE": {
-    handler: showTrialBalance,
+    handler: getTrialBalance,
     type: "get"
   },
   "DAY_BOOK": {
-    handler: showDayBook,
+    handler: getDayBook,
     type: "get"
   }
 }

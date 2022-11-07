@@ -24,7 +24,7 @@ const flagShowArray = false;
 const indentationLen = 4;
 const propNameLen = 30;
 
-function showAccounts() {
+function getAccounts() {
   const accountListRequest = get_accounts_list_request();
   tallyProcessRequest(accountListRequest, (responseObj) => {
     console.log(`Header: ${JSON.stringify(responseObj.ENVELOPE.HEADER, null, 2)}`)
@@ -106,25 +106,25 @@ function getLedgerGroups(command) {
   });
 }
 
-function showBalanceSheet() {
+function getBalanceSheet() {
   const balanceSheetRequest = get_balance_sheet_request();
   tallyProcessRequest(balanceSheetRequest, (responseObj) => {
     const bsnames = responseObj.ENVELOPE.BSNAME;
     const bsamts = responseObj.ENVELOPE.BSAMT;
 
     bsnames.forEach((bsname,i) =>{
-      bsAccName = bsname.DSPACCNAME[0].DSPDISPNAME[0];
-      bsamt = bsamts[i];
+      const bsAccName = bsname.DSPACCNAME[0].DSPDISPNAME[0];
+      const bsamt = bsamts[i];
       // console.log(`${i} bsamt=${JSON.stringify(bsamt)}`);
-      bsSubAmts = bsamt.BSSUBAMT;
-      bsMainAmt = bsamt.BSMAINAMT[0];
+      const bsSubAmts = bsamt.BSSUBAMT;
+      const bsMainAmt = bsamt.BSMAINAMT[0];
 
       console.log(`${i} ${JSON.stringify(bsAccName)}: ${bsMainAmt}`);
     })
   });
 }
 
-function showProfitLoss() {
+function getProfitLoss() {
   const profitLossRequest = get_profit_loss_request();
   tallyProcessRequest(profitLossRequest, (responseObj) => {
     const dspNames = responseObj.ENVELOPE.DSPACCNAME;
@@ -146,7 +146,7 @@ function showProfitLoss() {
   });
 }
 
-function showTrialBalance() {
+function getTrialBalance() {
   const trialBalanceRequest = get_trial_balance_request();
   tallyProcessRequest(trialBalanceRequest, (responseObj) => {
     const dspAccNames = responseObj.ENVELOPE.DSPACCNAME;
@@ -216,7 +216,7 @@ const traverse = (object, object_index, indent, object_name) => {
   console.log('');
 };
 
-function showDayBook() {
+function getDayBook() {
   const dayBookRequest = get_day_book_request();
   tallyProcessRequest(dayBookRequest, (responseObj) => {
     const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
@@ -393,9 +393,9 @@ function commandTester() {
   // showAccounts();
   // showLedgers();
   getLedgerGroups();
-  // showBalanceSheet();
+  // getBalanceSheet();
   // showProfitLoss();
-  // showTrialBalance();
+  // getTrialBalance();
   // showDayBook();
 
   // handleCreateLedgerGroup("Computers and Accessories", "Indirect Expenses");
@@ -421,11 +421,11 @@ module.exports = {
   handleCreateLedger,
   handleCreateVoucher,
   handleCreateVoucherSplit,
-  showAccounts,
+  getAccounts,
   getLedgers,
   getLedgerGroups,
-  showBalanceSheet,
-  showProfitLoss,
-  showTrialBalance,
-  showDayBook
+  getBalanceSheet,
+  getProfitLoss,
+  getTrialBalance,
+  getDayBook
 }
