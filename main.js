@@ -9,8 +9,10 @@ const { tallyCheckServer } = require("./tally/api");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
 const {DateFromString} = require("./utils/date");
 
+const updater = require('./updater');
+
 // Stephen Grider's udemy electron video
-const _ = require('lodash');
+// const _ = require('lodash');
 
 let mainWindow;
 
@@ -49,6 +51,9 @@ function createWindow() {
           mainWindow.webContents.send('tally:server:status:health', false);
         });
   }, 10000);
+
+  // Check for updates after three seconds
+  setTimeout(updater, 3000);
 }
 
 // This method will be called when Electron has finished
@@ -131,7 +136,8 @@ const verifyBankTransaction = (bankTransaction) => {
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
 const addBankTransactionToTally = (bankTransaction) => {
-  const debugFn = true;
+  const debugFn = false;
+
   return new Promise((resolve, reject) => {
     if ('Category' in bankTransaction) {
       if (debugFn) {
@@ -180,7 +186,6 @@ const addBankTransactionToTally = (bankTransaction) => {
             // console.log(`addBankTransactionToTally: Error: ${JSON.stringify(error)}`);
             reject(error);
           });
-
     } else {
       reject("Category is missing")
     }
@@ -188,7 +193,6 @@ const addBankTransactionToTally = (bankTransaction) => {
 }
 
 ipcMain.on('command:vouchers:request', (event, {command, data}) => {
-
   if (command == 'ADD_BANK_TRANSACTIONS') {
     // console.log("Promise.All()");
 

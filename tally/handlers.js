@@ -24,7 +24,7 @@ const flagShowArray = false;
 const indentationLen = 4;
 const propNameLen = 30;
 
-function getAccounts({command}) {
+function getCommand({command}) {
   const accountListRequest = get_accounts_list_request();
 
   return new Promise((resolve, reject) => {
@@ -32,7 +32,29 @@ function getAccounts({command}) {
         .then(({status, tallyResponse, requestObj, reqIdStr}) => {
           if (status == 'Success') {
 
+            resolve({response: {}, request:command});
+          } else {
+            // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+            // throw 'this should be handled';
+            throw 'Error! in getting accounts. Verify that a company is selected.';
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
 
+}
+
+function getAccounts({command}) {
+  const accountListRequest = get_accounts_list_request();
+
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(accountListRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
             const messages = tallyResponse.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
             messages.forEach(msg => {
               console.log(`msg.keys=${Object.keys(msg)}`);
@@ -59,10 +81,6 @@ function getAccounts({command}) {
           // console.log(`getLedgers:catch error=${error}`);
           reject(error);
         });
-  });
-
-  tallyProcessRequest(accountListRequest, (responseObj) => {
-
   });
 }
 
@@ -132,62 +150,122 @@ function getLedgerGroups(command) {
   });
 }
 
-function getBalanceSheet() {
+function getBalanceSheet({command}) {
   const balanceSheetRequest = get_balance_sheet_request();
-  tallyProcessRequest(balanceSheetRequest, (responseObj) => {
-    const bsnames = responseObj.ENVELOPE.BSNAME;
-    const bsamts = responseObj.ENVELOPE.BSAMT;
 
-    bsnames.forEach((bsname,i) =>{
-      const bsAccName = bsname.DSPACCNAME[0].DSPDISPNAME[0];
-      const bsamt = bsamts[i];
-      // console.log(`${i} bsamt=${JSON.stringify(bsamt)}`);
-      const bsSubAmts = bsamt.BSSUBAMT;
-      const bsMainAmt = bsamt.BSMAINAMT[0];
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(balanceSheetRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const bsnames = tallyResponse.ENVELOPE.BSNAME;
+            const bsamts = tallyResponse.ENVELOPE.BSAMT;
 
-      console.log(`${i} ${JSON.stringify(bsAccName)}: ${bsMainAmt}`);
-    })
+            bsnames.forEach((bsname,i) =>{
+              const bsAccName = bsname.DSPACCNAME[0].DSPDISPNAME[0];
+              const bsamt = bsamts[i];
+              // console.log(`${i} bsamt=${JSON.stringify(bsamt)}`);
+              const bsSubAmts = bsamt.BSSUBAMT;
+              const bsMainAmt = bsamt.BSMAINAMT[0];
+
+              console.log(`${i} ${JSON.stringify(bsAccName)}: ${bsMainAmt}`);
+            })
+
+            resolve({response: {}, request:command});
+          } else {
+            // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+            // throw 'this should be handled';
+            throw 'Error! in getting accounts. Verify that a company is selected.';
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
   });
 }
 
-function getProfitLoss() {
+function getProfitLoss({command}) {
   const profitLossRequest = get_profit_loss_request();
+
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(profitLossRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const dspNames = tallyResponse.ENVELOPE.DSPACCNAME;
+            const plAmts = tallyResponse.ENVELOPE.PLAMT;
+
+            dspNames.forEach((dspName,i) =>{
+              const dspAccName = dspName.DSPDISPNAME[0];
+              const plAmt = plAmts[i];
+
+              let plAmount;
+              if (plAmt.BSMAINAMT[0] === "") {
+                plAmount = plAmt.PLSUBAMT[0]
+              } else {
+                plAmount = plAmt.BSMAINAMT[0]
+              }
+
+              console.log(`${i} ${JSON.stringify(dspAccName)}: ${plAmount}`);
+            })
+
+            resolve({response: {}, request:command});
+          } else {
+            // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+            // throw 'this should be handled';
+            throw 'Error! in getting accounts. Verify that a company is selected.';
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
+
+
   tallyProcessRequest(profitLossRequest, (responseObj) => {
-    const dspNames = responseObj.ENVELOPE.DSPACCNAME;
-    const plAmts = responseObj.ENVELOPE.PLAMT;
 
-    dspNames.forEach((dspName,i) =>{
-      const dspAccName = dspName.DSPDISPNAME[0];
-      const plAmt = plAmts[i];
-
-      let plAmount;
-      if (plAmt.BSMAINAMT[0] === "") {
-        plAmount = plAmt.PLSUBAMT[0]
-      } else {
-        plAmount = plAmt.BSMAINAMT[0]
-      }
-
-      console.log(`${i} ${JSON.stringify(dspAccName)}: ${plAmount}`);
-    })
   });
 }
 
-function getTrialBalance() {
+function getTrialBalance({command}) {
   const trialBalanceRequest = get_trial_balance_request();
+
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(trialBalanceRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const dspAccNames = tallyResponse.ENVELOPE.DSPACCNAME;
+            const dspAccInfos = tallyResponse.ENVELOPE.DSPACCINFO;
+
+            dspAccNames.forEach((dspAccName,i) =>{
+              const accName = dspAccName.DSPDISPNAME[0];
+              const dspAccInfo = dspAccInfos[i];
+
+              // console.log(`dspAccInfo: ${JSON.stringify(dspAccInfo)}`);
+              const accDebitAmount = dspAccInfo.DSPCLDRAMT[0].DSPCLDRAMTA[0];
+              const accCreditAmount = dspAccInfo.DSPCLCRAMT[0].DSPCLCRAMTA[0];
+
+              console.log(`${i} ${JSON.stringify(accName.padStart(30))}: '${accDebitAmount.padStart(10)}' '${accCreditAmount.padStart(10)}'`);
+            })
+
+            resolve({response: {}, request:command});
+          } else {
+            // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+            // throw 'this should be handled';
+            throw 'Error! in getting accounts. Verify that a company is selected.';
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
+
   tallyProcessRequest(trialBalanceRequest, (responseObj) => {
-    const dspAccNames = responseObj.ENVELOPE.DSPACCNAME;
-    const dspAccInfos = responseObj.ENVELOPE.DSPACCINFO;
 
-    dspAccNames.forEach((dspAccName,i) =>{
-      const accName = dspAccName.DSPDISPNAME[0];
-      const dspAccInfo = dspAccInfos[i];
-
-      // console.log(`dspAccInfo: ${JSON.stringify(dspAccInfo)}`);
-      const accDebitAmount = dspAccInfo.DSPCLDRAMT[0].DSPCLDRAMTA[0];
-      const accCreditAmount = dspAccInfo.DSPCLCRAMT[0].DSPCLCRAMTA[0];
-
-      console.log(`${i} ${JSON.stringify(accName.padStart(30))}: '${accDebitAmount.padStart(10)}' '${accCreditAmount.padStart(10)}'`);
-    })
   });
 }
 
@@ -242,15 +320,36 @@ const traverse = (object, object_index, indent, object_name) => {
   console.log('');
 };
 
-function getDayBook() {
+function getDayBook({command}) {
   const dayBookRequest = get_day_book_request();
-  tallyProcessRequest(dayBookRequest, (responseObj) => {
-    const messages = responseObj.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
 
-    messages.slice(0,8).forEach((msg, m_index) => {
-      const voucher = msg.VOUCHER[0];
-      traverse(voucher, m_index, 0, "Voucher");
-    })
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(dayBookRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+
+            resolve({response: {}, request:command});
+          } else {
+            const messages = tallyResponse.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
+
+            messages.slice(0,8).forEach((msg, m_index) => {
+              const voucher = msg.VOUCHER[0];
+              traverse(voucher, m_index, 0, "Voucher");
+            })
+
+            // throw just makes the handling of exceptions to resolve similar to exceptions from called fns
+            // throw 'this should be handled';
+            throw 'Error! in getting accounts. Verify that a company is selected.';
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
+
+  tallyProcessRequest(dayBookRequest, (responseObj) => {
   });
 }
 
@@ -396,14 +495,14 @@ function handleCreateUnitName(unit_name) {
   const reqIdStr = `Create Unit: ${unit_name}`;
   const createUnitNameRequest = create_unit_name_request(unit_name);
 
-  tallyCommandExecute(createUnitNameRequest, reqIdStr);
+  return tallyCommandExecute(createUnitNameRequest, reqIdStr);
 }
 
 function handleCreateStockGroup(stock_group_name, parent_stock_group_name) {
   const reqIdStr = `Create StockGroup: ${stock_group_name} [parent:${parent_stock_group_name}]`;
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
 
-  tallyCommandExecute(createStockGroupRequest, reqIdStr);
+  return tallyCommandExecute(createStockGroupRequest, reqIdStr);
 }
 
 function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_name,
@@ -412,7 +511,7 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
 
-  tallyCommandExecute(createStockItemRequest, reqIdStr);
+  return tallyCommandExecute(createStockItemRequest, reqIdStr);
 }
 
 function commandTester() {
