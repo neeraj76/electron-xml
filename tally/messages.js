@@ -2,6 +2,7 @@ const {dateTallyFormat} = require("./tally_date");
 
 const flagDebugRequests = false;
 
+
 const create_export_request = (header, body) => {
   return {
     'ENVELOPE': {
@@ -36,6 +37,132 @@ const get_static_variables = () => {
   return {
     SVEXPORTFORMAT: "$$SysName:XML"
   }
+}
+
+const get_companies_request = () => {
+  const header = {
+    ...get_version_1_export_header(),
+    TYPE: "COLLECTION",
+    ID: "List of Companies"
+  }
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: {
+        SVIsSimpleCompany: "No"
+      },
+      TDL: {
+        TDLMESSAGE: {
+          COLLECTION: {
+            '$': {
+              ISMODIFY: "No",
+              ISFIXED: "No",
+              ISINITIALIZE: "Yes",
+              ISOPTION: "No",
+              ISINTERNAL: "No",
+              NAME: "List of Companies"
+            },
+            TYPE: "Company",
+            NATIVEMETHOD: ["NAME"]
+          }
+        }
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
+const get_current_company_request = () => {
+  const header = {
+    ...get_version_1_export_header(),
+    TYPE: "COLLECTION",
+    ID: "CompanyInfo"
+  }
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: {},
+      TDL: {
+        TDLMESSAGE: {
+          // Object definition to be used in collection
+          OBJECT: {
+            // headerInfo
+            '$': {
+              NAME: "CurrentCompany"
+            },
+            // fields to be fetched
+            LOCALFORMULA: [
+              {
+                "_": "CurrentCompany:##SVCURRENTCOMPANY"
+              },
+            ]
+          },
+          // Collection Pointer
+          COLLECTION: {
+            '$': {
+              NAME: "CompanyInfo",
+            },
+            // Object Pointer
+            OBJECTS: "CurrentCompany"
+          }
+        }
+      }
+    }
+  }
+
+  return create_export_request(header, body)
+}
+
+
+const get_license_info_request = () => {
+  const header = {
+    ...get_version_1_export_header(),
+    TYPE: "COLLECTION",
+    ID: "LicenseInfo"
+  }
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: {},
+      TDL: {
+        TDLMESSAGE: {
+          // Object definition to be used in collection
+          OBJECT: {
+            // headerInfo
+            '$': {
+              NAME: "LicenseInfo"
+            },
+            // fields to be fetched
+            LOCALFORMULA: [
+              {
+                "_": "ApplicationPath:$$SysInfo:ApplicationPath"
+              },
+              {
+                "_": "DataPath:##SVCurrentPath"
+              },
+              {
+                "_": "SerialNumber: $$LicenseInfo:SerialNumber"
+              },
+              {
+                "_": "IsEducationalMode:  $$LicenseInfo:IsEducationalMode"
+              },
+            ]
+          },
+          // Collection Pointer
+          COLLECTION: {
+            '$': {
+              NAME: "LicenseInfo",
+            },
+            // Object Pointer
+            OBJECTS: "LicenseInfo"
+          }
+        }
+      }
+    }
+  }
+
+  return create_export_request(header, body)
 }
 
 const get_accounts_list_request = () => {
@@ -486,6 +613,9 @@ const create_stock_item_request = (stockitem_name, parent_stock_group_name, unit
 }
 
 module.exports = {
+  get_companies_request,
+  get_current_company_request,
+  get_license_info_request,
   get_accounts_list_request,
   get_ledgers_list_request,
   get_ledger_groups_list_request,

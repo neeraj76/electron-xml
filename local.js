@@ -3,7 +3,7 @@ const { processExcelFile } = require('./spreadsheet/excel');
 const { app, BrowserWindow, ipcMain } = electron;
 const { commandTester } = require('./tally/handlers');
 const {processRowTally} = require("./spreadsheet/excel_tally");
-const {tallyCheckServer, tallyCheckServerBoolean} = require("./tally/api");
+const {tallyCheckServer, tallyCheckServerBoolean} = require("./tally/request");
 
 let mainWindow;
 

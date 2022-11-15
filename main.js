@@ -5,7 +5,7 @@ const isDev = require('electron-is-dev');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
-const { tallyCheckServer } = require("./tally/api");
+const { tallyCheckServer } = require("./tally/request");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
 const {DateFromString} = require("./utils/date");
 
@@ -110,7 +110,7 @@ ipcMain.on('command:tally:request', (event, command) => {
     // If the command thing misbehaves then we can pass it in the parameters
     tallyCommandMap[command].handler.apply(null, parameters)
         .then(({response, request}) => {
-          // console.log("command:request:Promise response=", response, " request=", request);
+          console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
           mainWindow.webContents.send('command:response', {request, response});
         })
         .catch(error => {

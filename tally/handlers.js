@@ -1,4 +1,7 @@
 const {
+  get_companies_request,
+  get_current_company_request,
+  get_license_info_request,
   get_accounts_list_request,
   get_ledgers_list_request,
   get_ledger_groups_list_request,
@@ -12,9 +15,9 @@ const {
   create_vouchersplit_request,
   create_unit_name_request,
   create_stock_group_request,
-  create_stock_item_request
+  create_stock_item_request,
 } = require("./messages");
-const { tallyProcessRequest, tallyProcessRequestPromise } = require("./api");
+const { tallyProcessRequest, tallyProcessRequestPromise } = require("./request");
 const { ExcelDateToJSDate, dateTallyFormat } = require('../spreadsheet/excel_date');
 const { DateToStringDate } = require('../utils/date');
 
@@ -46,6 +49,117 @@ function getCommand({command}) {
         });
   });
 
+}
+
+function getCompanies({command}) {
+  const companiesRequest = get_companies_request();
+
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(companiesRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const companyResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].COMPANY;
+            if (companyResponse) {
+              const companies = companyResponse.map(company => {
+                // console.log(`company=${JSON.stringify(company, null, 2)}`);
+                return {
+                  name: company['$'].NAME,
+                  alt: company.NAME[0]['_']
+                };
+              })
+
+              resolve({response:companies, request:command});
+            } else {
+              // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+              // throw 'this should be handled';
+              throw 'Error! in getting companies. Verify that tally is running in Licensed mode or Educational mode.';
+            }
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
+}
+
+function getLicenseInfo({command}) {
+  const licenseInfoRequest = get_license_info_request();
+
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(licenseInfoRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const licenseInfoResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LICENSEINFO[0];
+            if (licenseInfoResponse) {
+              const licenseInfo = parseCollection(licenseInfoResponse);
+
+              // const licenseInfo = Object.keys(licenseInfoResponse).map(key => {
+              //   // console.log(`key=${key} value=${JSON.stringify(licenseInfoResponse[key], null, 2)}`);
+              //   if (key === '$') {
+              //     return {name: key, value: licenseInfoResponse[key], type:'header'}
+              //   } else {
+              //     return {name: key, value: licenseInfoResponse[key][0]["_"], type: licenseInfoResponse[key][0]["$"].TYPE};
+              //   }
+              // })
+
+              resolve({response:licenseInfo, request:command});
+            } else {
+              // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+              // throw 'this should be handled';
+              throw 'Error! in getting License Info. Verify that tally is running in Licensed mode or Educational mode.';
+            }
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
+}
+
+function parseCollection(response) {
+  const list = Object.keys(response).map(key => {
+    // console.log(`key=${key} value=${JSON.stringify(response[key], null, 2)}`);
+    // return response[key];
+    if (key === '$') {
+      return {name: key, value: response[key], type: 'header'}
+    } else {
+      return {name: key, value: response[key][0]["_"], type: response[key][0]["$"].TYPE};
+    }
+  })
+      .filter(item => item.name !== '$')
+  
+  return list;
+}
+
+function getCurrentCompany({command}) {
+  const currentCompanyRequest = get_current_company_request();
+
+  return new Promise((resolve, reject) => {
+    tallyProcessRequestPromise(currentCompanyRequest)
+        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+          if (status == 'Success') {
+            const currentCompanyResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].CURRENTCOMPANY[0];
+            if (currentCompanyResponse) {
+              const currentCompany = parseCollection(currentCompanyResponse);
+
+              resolve({response:currentCompany, request:command});
+            } else {
+              // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
+              // throw 'this should be handled';
+              throw 'Error! in getting License Info. Verify that tally is running in Licensed mode or Educational mode.';
+            }
+          }
+        })
+        // Keep the catch block as it is needed to catch the exceptions raised from .then block
+        .catch(error =>{
+          // console.log(`getLedgers:catch error=${error}`);
+          reject(error);
+        });
+  });
 }
 
 function getAccounts({command}) {
@@ -552,5 +666,8 @@ module.exports = {
   getBalanceSheet,
   getProfitLoss,
   getTrialBalance,
-  getDayBook
+  getDayBook,
+  getCompanies,
+  getCurrentCompany,
+  getLicenseInfo,
 }

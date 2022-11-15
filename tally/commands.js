@@ -9,7 +9,10 @@ const {
   getBalanceSheet,
   getProfitLoss,
   getTrialBalance,
-  getDayBook
+  getDayBook,
+  getCompanies,
+  getCurrentCompany,
+  getLicenseInfo,
 } = require('./handlers');
 
 // const tallyCommands = [
@@ -60,7 +63,19 @@ const tallyCommandMap = {
   "DAY_BOOK": {
     handler: getDayBook,
     type: "get"
-  }
+  },
+  "COMPANIES": {
+    handler: getCompanies,
+    type: "get"
+  },
+  "CURRENTCOMPANY":{
+    handler: getCurrentCompany,
+    type: "get"
+  },
+  "LICENSEINFO": {
+    handler: getLicenseInfo,
+    type: "get"
+  },
 }
 
 const tallyCommands = Object.keys(tallyCommandMap);
