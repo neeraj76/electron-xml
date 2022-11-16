@@ -187,7 +187,7 @@ const addBankTransactionToTally = (bankTransaction) => {
 
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
           .then((response) => {
-            // console.log("addBankTransactionToTally: Response=", response);
+            console.log("addBankTransactionToTally: Response=", response);
             // mainWindow.webContents.send('command:response', response);
             // resolve()
             response['id'] = bankTransaction.id;
@@ -203,24 +203,20 @@ const addBankTransactionToTally = (bankTransaction) => {
   });
 }
 
-ipcMain.on('tally:command:vouchers:add', (event, {command, data}) => {
-  if (command == 'ADD_BANK_TRANSACTIONS') {
-    // console.log("Promise.All()");
+ipcMain.on('tally:command:vouchers:add', (event, requestData) => {
 
-    const promises = data.map((row) => {
-      return addBankTransactionToTally(row);
-    });
 
-    Promise.all(promises)
-        .then((results) => {
-          // console.log(results);
-          mainWindow.webContents.send('tally:command:vouchers:add', {command, results});
-        })
-        .catch(error => {
-          console.log(error);
-        });
-  } else {
-    console.log(`Command '${command}' not supported`)
-  }
+  const promises = requestData.map((row) => {
+    return addBankTransactionToTally(row);
+  });
+
+  Promise.all(promises)
+      .then((results) => {
+        // console.log(results);
+        mainWindow.webContents.send('tally:command:vouchers:add', results);
+      })
+      .catch(error => {
+        console.log(error);
+      });
 
 })
