@@ -52,7 +52,7 @@ ipcMain.on('screen:start', () => {
 });
 
 
-ipcMain.on('excel:submit', (event, path) => {
+ipcMain.on('excel:file:processor', (event, path) => {
   console.log(`Received file ${path}`);
   handleSpreadsheet(path);
 });

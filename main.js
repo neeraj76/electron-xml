@@ -86,13 +86,13 @@ ipcMain.on('tally:server:status', (event,) => {
       });
 });
 
-ipcMain.on('excel:submit', (event, files) => {
+ipcMain.on('excel:file:processor', (event, files) => {
   files.forEach(filePath => {
     console.log(`Received File:`, filePath);
     processExcelFile(filePath, processRowTally);
   });
 
-  mainWindow.webContents.send('excel:processed', files);
+  mainWindow.webContents.send('excel:file:processor', files);
 });
 
 ipcMain.on('command:list', (event) => {
@@ -130,11 +130,11 @@ ipcMain.on('tally:command', (event, command) => {
       });
 })
 
-ipcMain.on('command:tally:ledgers:request', (event, command) => {
+ipcMain.on('command:tally:ledgers:get', (event, command) => {
   console.log(`Tally Request: ${command}`);
   executeTallyCommand('LEDGERS')
       .then(response => {
-        mainWindow.webContents.send('command:response', {command, response});
+        mainWindow.webContents.send('command:tally:ledgers:get', {command, response});
       });
 })
 
