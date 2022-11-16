@@ -95,9 +95,9 @@ ipcMain.on('excel:submit', (event, files) => {
   mainWindow.webContents.send('excel:processed', files);
 });
 
-ipcMain.on('command:list:request', (event) => {
+ipcMain.on('command:list', (event) => {
   // console.log(tallyReadOnlyCommands);
-  mainWindow.webContents.send('command:list:response', tallyReadOnlyCommands);
+  mainWindow.webContents.send('command:list', tallyReadOnlyCommands);
 });
 
 function executeTallyCommand(command) {
