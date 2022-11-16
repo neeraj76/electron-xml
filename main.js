@@ -100,37 +100,44 @@ ipcMain.on('command:list:request', (event) => {
   mainWindow.webContents.send('command:list:response', tallyReadOnlyCommands);
 });
 
-ipcMain.on('command:tally:request', (event, command) => {
-  console.log(`Tally Request: ${command}`);
-
+function executeTallyCommand(command) {
   // This should be moved to a tally promise
-  if (tallyCommands.includes(command)) {
-    const parameters = [{command}]
+  return new Promise((resolve, reject) => {
+    if (tallyCommands.includes(command)) {
+      const parameters = [{command}]
 
-    // If the command thing misbehaves then we can pass it in the parameters
-    tallyCommandMap[command].handler.apply(null, parameters)
-        .then(({response, request}) => {
-          console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
-          mainWindow.webContents.send('command:response', {request, response});
-        })
-        .catch(error => {
-          console.log(`command:tally:request  command=${command}`, error);
-        });
-  }
+      // If the command thing misbehaves then we can pass it in the parameters
+      tallyCommandMap[command].handler.apply(null, parameters)
+          .then(({response, request}) => {
+            console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
+            // mainWindow.webContents.send('command:response', {request, response});
+            resolve(response)
+          })
+          .catch(error => {
+            // console.log(`command:tally:request  command=${command}`, error);
+            reject(error);
+          });
+    }
+  })
+
+}
+
+ipcMain.on('command:tally:request', (event, command) => {
+  console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
+  executeTallyCommand(command)
+      .then(response => {
+        mainWindow.webContents.send('command:response', {command, response});
+      });
 })
 
-const verifyBankTransaction = (bankTransaction) => {
-  return new Promise((resolve, reject) => {
-    console.log(JSON.stringify(bankTransaction));
-    // (voucher_type, excel_date, debit_ledger, credit_ledger, amount, narration)
-    if ('Category' in bankTransaction) {
-      const voucher_params = ['Payment', 44652, ""]
+ipcMain.on('command:tally:ledgers:request', (event, command) => {
+  console.log(`Tally Request: ${command}`);
+  executeTallyCommand('LEDGERS')
+      .then(response => {
+        mainWindow.webContents.send('command:response', {command, response});
+      });
+})
 
-    } else {
-      reject("Category is missing")
-    }
-  });
-}
 
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
