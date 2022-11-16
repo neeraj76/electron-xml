@@ -50,7 +50,7 @@ function createWindow() {
         .catch(error => {
           mainWindow.webContents.send('tally:server:status:health', false);
         });
-  }, 10000);
+  }, 2000);
 
   // Check for updates after three seconds
   setTimeout(updater, 3000);
@@ -111,7 +111,7 @@ function executeTallyCommand(command) {
           .then(({response, request}) => {
             console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
             // mainWindow.webContents.send('command:response', {request, response});
-            resolve(response)
+            resolve({request, response})
           })
           .catch(error => {
             // console.log(`command:tally:request  command=${command}`, error);
@@ -125,19 +125,26 @@ function executeTallyCommand(command) {
 ipcMain.on('tally:command', (event, command) => {
   console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
   executeTallyCommand(command)
-      .then(response => {
-        mainWindow.webContents.send('tally:command', {command, response});
+      .then(({request, response})  => {
+        mainWindow.webContents.send('tally:command', {request, response});
       });
 })
 
-ipcMain.on('command:tally:ledgers:get', (event, command) => {
+ipcMain.on('tally:command:ledgers:list', (event, command) => {
   console.log(`Tally Request: ${command}`);
   executeTallyCommand('LEDGERS')
-      .then(response => {
-        mainWindow.webContents.send('command:tally:ledgers:get', {command, response});
+      .then(({request, response}) => {
+        mainWindow.webContents.send('tally:command:ledgers:list', {request, response});
       });
 })
 
+ipcMain.on('tally:command:companies:list', (event, command) => {
+  console.log(`Tally Request: ${command}`);
+  executeTallyCommand('COMPANIES')
+      .then(({request, response})  => {
+        mainWindow.webContents.send('tally:command:companies:list', {request, response});
+      });
+})
 
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
