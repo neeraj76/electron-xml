@@ -146,6 +146,10 @@ const addBankTransactionToTally = (bankTransaction) => {
   const debugFn = false;
 
   return new Promise((resolve, reject) => {
+    if (!('Bank' in bankTransaction) || bankTransaction.Bank === "") {
+      throw `'Bank' is not specified in the transaction`;
+    }
+
     if ('Category' in bankTransaction) {
       if (debugFn) {
         console.log(`addBankTransactionToTally: bankTransaction=${JSON.stringify(bankTransaction, null, 2)}`);
@@ -199,7 +203,7 @@ const addBankTransactionToTally = (bankTransaction) => {
   });
 }
 
-ipcMain.on('command:vouchers:request', (event, {command, data}) => {
+ipcMain.on('tally:command:vouchers:add', (event, {command, data}) => {
   if (command == 'ADD_BANK_TRANSACTIONS') {
     // console.log("Promise.All()");
 
@@ -210,7 +214,7 @@ ipcMain.on('command:vouchers:request', (event, {command, data}) => {
     Promise.all(promises)
         .then((results) => {
           // console.log(results);
-          mainWindow.webContents.send('command:vouchers:response', {command, results});
+          mainWindow.webContents.send('tally:command:vouchers:add', {command, results});
         })
         .catch(error => {
           console.log(error);
