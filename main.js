@@ -76,13 +76,13 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on('tally:server:status:request', (event,) => {
+ipcMain.on('tally:server:status', (event,) => {
   tallyCheckServer()
       .then(response => {
-        mainWindow.webContents.send('tally:server:status:response', response.status === 'Success');
+        mainWindow.webContents.send('tally:server:status', response.status === 'Success');
       })
       .catch(error => {
-        mainWindow.webContents.send('tally:server:status:response', false);
+        mainWindow.webContents.send('tally:server:status', false);
       });
 });
 
@@ -122,11 +122,11 @@ function executeTallyCommand(command) {
 
 }
 
-ipcMain.on('command:tally:request', (event, command) => {
+ipcMain.on('tally:command', (event, command) => {
   console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
   executeTallyCommand(command)
       .then(response => {
-        mainWindow.webContents.send('command:response', {command, response});
+        mainWindow.webContents.send('tally:command', {command, response});
       });
 })
 
