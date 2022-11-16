@@ -188,13 +188,10 @@ const addBankTransactionToTally = (bankTransaction) => {
       tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
           .then((response) => {
             console.log("addBankTransactionToTally: Response=", response);
-            // mainWindow.webContents.send('command:response', response);
-            // resolve()
             response['id'] = bankTransaction.id;
             resolve(response);
           })
           .catch(error => {
-            // console.log(`addBankTransactionToTally: Error: ${JSON.stringify(error)}`);
             reject(error);
           });
     } else {
@@ -204,8 +201,6 @@ const addBankTransactionToTally = (bankTransaction) => {
 }
 
 ipcMain.on('tally:command:vouchers:add', (event, requestData) => {
-
-
   const promises = requestData.map((row) => {
     return addBankTransactionToTally(row);
   });
