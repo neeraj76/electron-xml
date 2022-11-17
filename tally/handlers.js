@@ -17,8 +17,7 @@ const {
   create_stock_group_request,
   create_stock_item_request,
 } = require("./messages");
-const { tallyProcessRequest, tallyProcessRequestPromise } = require("./request");
-const { ExcelDateToJSDate, dateTallyFormat } = require('../spreadsheet/excel_date');
+const { tallyProcessRequestPromise } = require("./request");
 const { DateToStringDate } = require('../utils/date');
 
 const flagShowDesc = false;
@@ -314,11 +313,6 @@ function getProfitLoss({command}) {
           reject(error);
         });
   });
-
-
-  tallyProcessRequest(profitLossRequest, (responseObj) => {
-
-  });
 }
 
 function getTrialBalance({command}) {
@@ -354,10 +348,6 @@ function getTrialBalance({command}) {
           // console.log(`getLedgers:catch error=${error}`);
           reject(error);
         });
-  });
-
-  tallyProcessRequest(trialBalanceRequest, (responseObj) => {
-
   });
 }
 
@@ -439,9 +429,6 @@ function getDayBook({command}) {
           // console.log(`getLedgers:catch error=${error}`);
           reject(error);
         });
-  });
-
-  tallyProcessRequest(dayBookRequest, (responseObj) => {
   });
 }
 
