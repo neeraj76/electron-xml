@@ -122,9 +122,10 @@ function executeTallyCommand(command, parameters) {
 
 }
 
-ipcMain.on('tally:command', (event, command) => {
-  console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
-  executeTallyCommand(command)
+ipcMain.on('tally:command', (event, parameters) => {
+  const {command, company} = parameters;
+  // console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
+  executeTallyCommand(command, {company})
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command', {request, response});
       });
