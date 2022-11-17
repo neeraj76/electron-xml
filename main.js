@@ -146,6 +146,14 @@ ipcMain.on('tally:command:companies:list', (event, command) => {
       });
 })
 
+ipcMain.on('tally:command:companies:current', (event, command) => {
+  console.log(`Tally Request: ${command}`);
+  executeTallyCommand('CURRENTCOMPANY')
+      .then(({request, response})  => {
+        mainWindow.webContents.send('tally:command:companies:current', {request, response});
+      });
+})
+
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.

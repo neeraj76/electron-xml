@@ -144,7 +144,7 @@ function getCurrentCompany({command}) {
           if (status == 'Success') {
             const currentCompanyResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].CURRENTCOMPANY[0];
             if (currentCompanyResponse) {
-              const currentCompany = parseCollection(currentCompanyResponse);
+              const currentCompany = parseCollection(currentCompanyResponse)[0];
 
               resolve({response:currentCompany, request:command});
             } else {
