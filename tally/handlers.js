@@ -215,7 +215,7 @@ function getLedgerGroups(command) {
     tallyProcessRequestPromise(ledgerGroupsListRequest)
         .then(({status, tallyResponse}) => {
           if (status == 'Success') {
-            const groupResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
+            const groupResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].GROUP;
             if (groupResponse) {
               const groups = groupResponse.map(group => {
                 // console.log(`ledger=${JSON.stringify(group, null, 2)}`);
