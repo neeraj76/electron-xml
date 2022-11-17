@@ -100,14 +100,14 @@ ipcMain.on('command:list', (event) => {
   mainWindow.webContents.send('command:list', tallyReadOnlyCommands);
 });
 
-function executeTallyCommand(command) {
+function executeTallyCommand(command, parameters) {
   // This should be moved to a tally promise
   return new Promise((resolve, reject) => {
     if (tallyCommands.includes(command)) {
-      const parameters = [{command}]
+      const args = [{command, parameters}]
 
       // If the command thing misbehaves then we can pass it in the parameters
-      tallyCommandMap[command].handler.apply(null, parameters)
+      tallyCommandMap[command].handler.apply(null, args)
           .then(({response, request}) => {
             console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
             // mainWindow.webContents.send('command:response', {request, response});
@@ -130,24 +130,24 @@ ipcMain.on('tally:command', (event, command) => {
       });
 })
 
-ipcMain.on('tally:command:ledgers:list', (event, command) => {
-  console.log(`Tally Request: ${command}`);
-  executeTallyCommand('LEDGERS')
+ipcMain.on('tally:command:ledgers:list', (event, parameters) => {
+  console.log(`Tally Request: ${parameters.company}`);
+  executeTallyCommand('LEDGERS', parameters)
       .then(({request, response}) => {
         mainWindow.webContents.send('tally:command:ledgers:list', {request, response});
       });
 })
 
-ipcMain.on('tally:command:companies:list', (event, command) => {
-  console.log(`Tally Request: ${command}`);
+ipcMain.on('tally:command:companies:list', (event, parameters) => {
+  console.log(`Tally Request: ${parameters}`);
   executeTallyCommand('COMPANIES')
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command:companies:list', {request, response});
       });
 })
 
-ipcMain.on('tally:command:companies:current', (event, command) => {
-  console.log(`Tally Request: ${command}`);
+ipcMain.on('tally:command:companies:current', (event, parameters) => {
+  console.log(`Tally Request: ${parameters}`);
   executeTallyCommand('CURRENTCOMPANY')
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command:companies:current', {request, response});

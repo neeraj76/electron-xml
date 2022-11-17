@@ -33,10 +33,22 @@ const get_version_1_import_header = () => {
 }
 
 
-const get_static_variables = () => {
-  return {
+const get_static_variables = (parameters) => {
+  let static_vars = {
     SVEXPORTFORMAT: "$$SysName:XML"
+  };
+
+  if (parameters !== undefined) {
+    console.log(`get_static_variables: parameters=${JSON.stringify(parameters)}`);
+    if (Object.keys(parameters).includes('company')) {
+      static_vars = {...static_vars, SVCURRENTCOMPANY: parameters.company};
+    }
+    console.log(`get_static_variables: parameters=${JSON.stringify(static_vars)}`);
+  } else {
+    console.log(`We do not have paramaters`)
   }
+
+  return static_vars;
 }
 
 const get_companies_request = () => {
@@ -220,7 +232,7 @@ const get_ledgers_names_only_list_request = () => {
   return create_export_request(header, body)
 }
 
-const get_ledgers_list_request = () => {
+const get_ledgers_list_request = (parameters) => {
   const header = {
     ...get_version_1_export_header(),
     TYPE: "COLLECTION",
@@ -229,7 +241,7 @@ const get_ledgers_list_request = () => {
 
   const body = {
       DESC: {
-        STATICVARIABLES: get_static_variables(),
+        STATICVARIABLES: get_static_variables(parameters),
         TDL: {
           TDLMESSAGE: {
             COLLECTION: {

@@ -27,36 +27,13 @@ const flagShowArray = false;
 const indentationLen = 4;
 const propNameLen = 30;
 
-function getCommand({command}) {
-  const accountListRequest = get_accounts_list_request();
-
-  return new Promise((resolve, reject) => {
-    tallyProcessRequestPromise(accountListRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
-          if (status == 'Success') {
-
-            resolve({response: {}, request:command});
-          } else {
-            // throw just makes the handling of exceptions of resolve similar to exceptions from called fns
-            // throw 'this should be handled';
-            throw 'Error! in getting accounts. Verify that a company is selected.';
-          }
-        })
-        // Keep the catch block as it is needed to catch the exceptions raised from .then block
-        .catch(error =>{
-          // console.log(`getLedgers:catch error=${error}`);
-          reject(error);
-        });
-  });
-
-}
 
 function getCompanies({command}) {
   const companiesRequest = get_companies_request();
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(companiesRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const companyResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].COMPANY;
             if (companyResponse) {
@@ -89,7 +66,7 @@ function getLicenseInfo({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(licenseInfoRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const licenseInfoResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LICENSEINFO[0];
             if (licenseInfoResponse) {
@@ -140,7 +117,7 @@ function getCurrentCompany({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(currentCompanyRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const currentCompanyResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].CURRENTCOMPANY[0];
             if (currentCompanyResponse) {
@@ -167,7 +144,7 @@ function getAccounts({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(accountListRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const messages = tallyResponse.ENVELOPE.BODY[0].IMPORTDATA[0].REQUESTDATA[0].TALLYMESSAGE;
             messages.forEach(msg => {
@@ -198,12 +175,13 @@ function getAccounts({command}) {
   });
 }
 
-function getLedgers({command}) {
-  const ledgerListRequest = get_ledgers_list_request();
+function getLedgers({command, parameters}) {
+  console.log(`getLedgers: parameters=${JSON.stringify(parameters, null, 2)}`);
+  const ledgerListRequest = get_ledgers_list_request(parameters);
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(ledgerListRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const ledgerResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
             if (ledgerResponse) {
@@ -236,7 +214,7 @@ function getLedgerGroups(command) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(ledgerGroupsListRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const groupResponse = tallyResponse.ENVELOPE.BODY[0].DATA[0].COLLECTION[0].LEDGER;
             if (groupResponse) {
@@ -269,7 +247,7 @@ function getBalanceSheet({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(balanceSheetRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const bsnames = tallyResponse.ENVELOPE.BSNAME;
             const bsamts = tallyResponse.ENVELOPE.BSAMT;
@@ -304,7 +282,7 @@ function getProfitLoss({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(profitLossRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const dspNames = tallyResponse.ENVELOPE.DSPACCNAME;
             const plAmts = tallyResponse.ENVELOPE.PLAMT;
@@ -348,7 +326,7 @@ function getTrialBalance({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(trialBalanceRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
             const dspAccNames = tallyResponse.ENVELOPE.DSPACCNAME;
             const dspAccInfos = tallyResponse.ENVELOPE.DSPACCINFO;
@@ -439,7 +417,7 @@ function getDayBook({command}) {
 
   return new Promise((resolve, reject) => {
     tallyProcessRequestPromise(dayBookRequest)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
+        .then(({status, tallyResponse}) => {
           if (status == 'Success') {
 
             resolve({response: {}, request:command});
@@ -467,14 +445,8 @@ function getDayBook({command}) {
   });
 }
 
-function parseTallyErrorObj(tallyError, requestObj, reqIdStr) {
-  return new Promise((resolve, reject) => {
-    console.log(`Error! ${reqIdStr}: ${tallyError}`)
-    resolve(tallyError);
-  })
-}
 
-function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
+function parseTallyResponseObj(tallyResponse) {
   const responseCodeMap = {
     "CREATED": {type: "integer"},
     "ALTERED": {type: "integer"},
@@ -536,11 +508,11 @@ function parseTallyResponseObj(tallyResponse, requestObj, reqIdStr) {
 }
 
 // Need to make a promise out of this
-function tallyCommandExecute(commandRequest, reqIdStr) {
+function tallyCommandExecute(commandRequest) {
   return new Promise((resolve, reject) => {
-    tallyProcessRequestPromise(commandRequest, reqIdStr)
-        .then(({status, tallyResponse, requestObj, reqIdStr}) => {
-          parseTallyResponseObj(tallyResponse, requestObj, reqIdStr)
+    tallyProcessRequestPromise(commandRequest)
+        .then(({status, tallyResponse}) => {
+          parseTallyResponseObj(tallyResponse)
               .then(parseResponse => {
                 // console.log(`tallyCommandExecute: response=${JSON.stringify(parseResponse, null, 2)}`);
                 if (parseResponse.ERRORS > 0 || Object.keys(parseResponse).includes('LINEERROR')) {
@@ -561,19 +533,19 @@ function handleCreateLedgerGroup(ledger_group_name, parent_ledger_group_name) {
   const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
   const createLedgerGroupsRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
 
-  return tallyCommandExecute(createLedgerGroupsRequest, reqIdStr);
+  return tallyCommandExecute(createLedgerGroupsRequest);
 }
 
 function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amount) {
   const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}]`;
   const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
 
-  return tallyCommandExecute(createLedgersRequest, reqIdStr);
+  return tallyCommandExecute(createLedgersRequest);
 }
 
 function createTallyVoucherPromise(voucherRequest, reqIdStr) {
   return new Promise((resolve, reject) => {
-    tallyCommandExecute(voucherRequest, reqIdStr)
+    tallyCommandExecute(voucherRequest)
         .then(response => {
           const voucherResponse = {
             status: response.status,
@@ -609,14 +581,14 @@ function handleCreateUnitName(unit_name) {
   const reqIdStr = `Create Unit: ${unit_name}`;
   const createUnitNameRequest = create_unit_name_request(unit_name);
 
-  return tallyCommandExecute(createUnitNameRequest, reqIdStr);
+  return tallyCommandExecute(createUnitNameRequest);
 }
 
 function handleCreateStockGroup(stock_group_name, parent_stock_group_name) {
   const reqIdStr = `Create StockGroup: ${stock_group_name} [parent:${parent_stock_group_name}]`;
   const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
 
-  return tallyCommandExecute(createStockGroupRequest, reqIdStr);
+  return tallyCommandExecute(createStockGroupRequest);
 }
 
 function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_name,
@@ -625,7 +597,7 @@ function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_nam
   const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
       open_position_type, open_position_quantity, open_position_amount);
 
-  return tallyCommandExecute(createStockItemRequest, reqIdStr);
+  return tallyCommandExecute(createStockItemRequest);
 }
 
 function commandTester() {

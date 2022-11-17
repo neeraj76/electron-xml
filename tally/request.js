@@ -2,13 +2,13 @@ const {convertObjToXml, convertXmlToObj} = require("../xml/convert");
 const {tallyApiCall} = require("../services/api");
 
 const flagShowReqId = false;
-const flagShowRequest = false;
+const flagShowRequest = true;
 const flagShowResponse = false;
-const flagShowXml = false;
+const flagShowXml = true;
 
 const tallyCheckServerBoolean = () => {
   return new Promise(function (resolve,reject) {
-    tallyProcessRequestPromise(null, "Check Server")
+    tallyProcessRequestPromise(null)
         .then(response => {
           console.log(`tallyCheckServerPromise: ${JSON.stringify(response)}`)
           resolve(true);
@@ -21,7 +21,7 @@ const tallyCheckServerBoolean = () => {
 }
 
 const tallyCheckServer = () => {
-  return tallyProcessRequestPromise(null, "Check Server");
+  return tallyProcessRequestPromise(null);
 }
 
 const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
@@ -70,12 +70,8 @@ const tallyProcessRequest = (requestObj, callback, reqIdStr) => {
       });
 }
 
-const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
+const tallyProcessRequestPromise = (requestObj) => {
   return new Promise((resolve, reject) => {
-    if (flagShowReqId) {
-      console.log(`tallyProcessRequest: req='${reqIdStr}'`);
-    }
-
     if (flagShowRequest) {
       console.log(JSON.stringify(requestObj, null, 2));
     }
@@ -103,8 +99,7 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
             const responseObj = {
               status: 'Success',
               tallyResponse: tallyResponseObj,
-              requestObj,
-              reqIdStr
+              requestObj
             }
             resolve(responseObj);
           });
@@ -116,8 +111,7 @@ const tallyProcessRequestPromise = (requestObj, reqIdStr) => {
             status: 'Failed',
             reason: 'timeout',
             tallyError: error,
-            requestObj,
-            reqIdStr
+            requestObj
           }
           reject(errorObj);
         });
