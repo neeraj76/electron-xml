@@ -18,7 +18,6 @@ const {
   create_stock_item_request,
 } = require("./messages");
 const { tallyProcessRequestPromise } = require("./request");
-const { DateToStringDate } = require('../utils/date');
 
 const flagShowDesc = false;
 const flagShowAll = false;
@@ -516,16 +515,16 @@ function tallyCommandExecute(commandRequest) {
   });
 }
 
-function handleCreateLedgerGroup(ledger_group_name, parent_ledger_group_name) {
-  const reqIdStr = `Create LedgerGroup: ${ledger_group_name} [parent:${parent_ledger_group_name}]`;
-  const createLedgerGroupsRequest = create_ledger_group_request(ledger_group_name, parent_ledger_group_name);
+function handleCreateLedgerGroup(ledgerGroupName, parentLedgerGroupName) {
+  // const reqIdStr = `Create LedgerGroup: ${ledgerGroupName} [parent:${parentLedgerGroupName}]`;
+  const createLedgerGroupsRequest = create_ledger_group_request(ledgerGroupName, parentLedgerGroupName);
 
   return tallyCommandExecute(createLedgerGroupsRequest);
 }
 
-function handleCreateLedger(ledger_name, parent_ledger_group_name, opening_amount) {
-  const reqIdStr = `Create Ledger: ${ledger_name} [parent:${parent_ledger_group_name} opening_amount=${opening_amount}]`;
-  const createLedgersRequest = create_ledger_request(ledger_name, parent_ledger_group_name, opening_amount);
+function handleCreateLedger(ledgerName, parentLedgerGroupName, openingAmount) {
+  // const reqIdStr = `Create Ledger: ${ledgerName} [parent:${parentLedgerGroupName} openingAmount=${openingAmount}]`;
+  const createLedgersRequest = create_ledger_request(ledgerName, parentLedgerGroupName, openingAmount);
 
   return tallyCommandExecute(createLedgersRequest);
 }
@@ -564,25 +563,25 @@ function handleCreateVoucherSplit(targetCompany, voucherType, voucherDate, narra
   return createTallyVoucherPromise(createVoucherSplitRequest);
 }
 
-function handleCreateUnitName(unit_name) {
-  const reqIdStr = `Create Unit: ${unit_name}`;
-  const createUnitNameRequest = create_unit_name_request(unit_name);
+function handleCreateUnitName(unitName) {
+  // const reqIdStr = `Create Unit: ${unitName}`;
+  const createUnitNameRequest = create_unit_name_request(unitName);
 
   return tallyCommandExecute(createUnitNameRequest);
 }
 
-function handleCreateStockGroup(stock_group_name, parent_stock_group_name) {
-  const reqIdStr = `Create StockGroup: ${stock_group_name} [parent:${parent_stock_group_name}]`;
-  const createStockGroupRequest = create_stock_group_request(stock_group_name, parent_stock_group_name);
+function handleCreateStockGroup(stockGroupName, parentStockGroupName) {
+  // const reqIdStr = `Create StockGroup: ${stockGroupName} [parent:${parentStockGroupName}]`;
+  const createStockGroupRequest = create_stock_group_request(stockGroupName, parentStockGroupName);
 
   return tallyCommandExecute(createStockGroupRequest);
 }
 
-function handleCreateStockItem(stockitem_name, parent_stock_group_name, unit_name,
-                               open_position_type, open_position_quantity, open_position_amount) {
-  const reqIdStr = `Create StockItem: ${stockitem_name} [parent:${parent_stock_group_name}] ${unit_name}}`;
-  const createStockItemRequest = create_stock_item_request(stockitem_name, parent_stock_group_name, unit_name,
-      open_position_type, open_position_quantity, open_position_amount);
+function handleCreateStockItem(stockItemName, parentStockGroupName, unitName,
+                               openPositionType, openPositionQuantity, openPositionAmount) {
+  // const reqIdStr = `Create StockItem: ${stockItemName} [parent:${parentStockGroupName}] ${unitName}}`;
+  const createStockItemRequest = create_stock_item_request(stockItemName, parentStockGroupName, unitName,
+      openPositionType, openPositionQuantity, openPositionAmount);
 
   return tallyCommandExecute(createStockItemRequest);
 }
