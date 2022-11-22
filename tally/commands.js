@@ -99,10 +99,6 @@ const tallyParameterMap = {
   ],
 
   'VOUCHER': [
-    // {
-    //   name: 'targetCompany',
-    //   type: 'string'
-    // },
     {
       name: 'voucherType',
       type: 'string'
@@ -132,10 +128,6 @@ const tallyParameterMap = {
   // targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries
   // Haven't tested its working yet
   'VOUCHERSPLIT': [
-    // {
-    //   name: 'targetCompany',
-    //   type: 'string'
-    // },
     {
       name: 'voucherType',
       type: 'string'
