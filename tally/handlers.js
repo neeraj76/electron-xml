@@ -515,14 +515,14 @@ function tallyCommandExecute(commandRequest) {
   });
 }
 
-function handleCreateLedgerGroup(ledgerGroupName, parentLedgerGroupName) {
+function handleCreateLedgerGroup({ledgerGroupName, parentLedgerGroupName}) {
   // const reqIdStr = `Create LedgerGroup: ${ledgerGroupName} [parent:${parentLedgerGroupName}]`;
   const createLedgerGroupsRequest = create_ledger_group_request(ledgerGroupName, parentLedgerGroupName);
 
   return tallyCommandExecute(createLedgerGroupsRequest);
 }
 
-function handleCreateLedger(ledgerName, parentLedgerGroupName, openingAmount) {
+function handleCreateLedger({ledgerName, parentLedgerGroupName, openingAmount}) {
   // const reqIdStr = `Create Ledger: ${ledgerName} [parent:${parentLedgerGroupName} openingAmount=${openingAmount}]`;
   const createLedgersRequest = create_ledger_request(ledgerName, parentLedgerGroupName, openingAmount);
 
@@ -555,7 +555,7 @@ function handleCreateVoucher({targetCompany, voucherType, voucherDate, debitLedg
 }
 
 // The data must be a javascript data instance
-function handleCreateVoucherSplit(targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries) {
+function handleCreateVoucherSplit({targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries}) {
   // const date = ExcelDateToJSDate(excel_date);
   // const reqIdStr = `Create VoucherSplit: ${voucherType} ${DateToStringDate(voucherDate)} [DR:${debitEntries} CR:${creditEntries}]`;
   const createVoucherSplitRequest = create_vouchersplit_request(targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries);

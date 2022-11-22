@@ -1,49 +1,58 @@
-const { tallyCommands, tallyCommandMap } = require('../tally/commands');
+const { tallyCommands, tallyCommandMap, tallyParameterMap } = require('../tally/commands');
 
-const debugRow = false;
-const debugParameters = false;
+const debugRow = true;
+const debugParameters = true;
 
-const processParameters = (params) => {
+const processParameters = (params, paramsMap) => {
   if (debugParameters) {
     console.log(`params=${params}`);
+    console.log(`paramsMap=${JSON.stringify(paramsMap)}`);
   }
 
-  const new_params = [];
-  const debit_ledger = [];
-  const credit_ledger = [];
-  let i = 0;
-  while (i < params.length) {
-    const curr_param = params[i];
-    if (curr_param !== 'DR' && curr_param != 'CR') {
-      new_params.push(curr_param);
-      i += 1;
+  const newParams = [];
+  const paramsObj = {}
+  const debitLedger = [];
+  const creditLedger = [];
+  let paramIdx = 0;
+  while (paramIdx < params.length) {
+    const currParam = params[paramIdx];
+    if (currParam !== 'DR' && currParam != 'CR') {
+      // newParams.push(currParam);
+      paramsObj[paramsMap[paramIdx].name] = currParam;
+      paramIdx += 1;
     } else {
       const lentry = {}
-      lentry['ledger_account'] = params[i+1];
-      lentry['amount'] = params[i+2];
-      if (curr_param === 'DR') {
-        debit_ledger.push(lentry);
-      } else if (curr_param === 'CR') {
-        credit_ledger.push(lentry);
+      lentry['ledger_account'] = params[paramIdx+1];
+      lentry['amount'] = params[paramIdx+2];
+      if (currParam === 'DR') {
+        debitLedger.push(lentry);
+      } else if (currParam === 'CR') {
+        creditLedger.push(lentry);
       } else {
-        throw `ledger entry type ${curr_param} not handled`;
+        throw `ledger entry type ${currParam} not handled`;
       }
 
-      i += 3;
+      paramIdx += 3;
     }
   }
 
-  new_params.push(debit_ledger);
-  new_params.push(credit_ledger);
-
-  if (debugParameters) {
-    console.log(`new_params=${new_params}`);
+  // newParams.push(debitLedger);
+  // newParams.push(creditLedger);
+  if (debitLedger.length) {
+    paramsObj.debitLedger = debitLedger;
+  }
+  if (creditLedger.length) {
+    paramsObj.creditLedger = creditLedger;
   }
 
-  return new_params;
+  if (debugParameters) {
+    console.log(`paramsObj=${JSON.stringify(paramsObj)}`);
+  }
+
+  return [paramsObj];
 }
 
-const processRowTally = (row) => {
+const processRowAsCommand = (row) => {
   if (debugRow) {
     console.log(`typeof(row)=${typeof row}`, row);
   }
@@ -69,7 +78,8 @@ const processRowTally = (row) => {
         console.log(`parameters=${parameters}`)
       }
 
-      parameters = processParameters(parameters);
+      parameters = processParameters(parameters, tallyParameterMap[row_command]);
+
       // Can be Temp Disabled
       tallyCommandMap[row_command].handler.apply(null, parameters)
           .then(response => {
@@ -89,5 +99,5 @@ const processRowTally = (row) => {
 }
 
 module.exports = {
-  processRowTally
+  processRowTally: processRowAsCommand
 }
