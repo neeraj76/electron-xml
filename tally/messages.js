@@ -39,14 +39,13 @@ const get_static_variables = (parameters) => {
   };
 
   if (parameters !== undefined) {
-    console.log(`get_static_variables: parameters=${JSON.stringify(parameters)}`);
+    // console.log(`get_static_variables: parameters=${JSON.stringify(parameters)}`);
     if (parameters.targetCompany !== undefined) {
-      // console.log(`company=${parameters.company} typeof(company)=${typeof parameters.targetCompany}`)
       static_vars = {...static_vars, SVCURRENTCOMPANY: parameters.targetCompany};
     }
-    console.log(`get_static_variables: parameters=${JSON.stringify(static_vars)}`);
+    // console.log(`get_static_variables: parameters=${JSON.stringify(static_vars)}`);
   } else {
-    console.log(`We do not have paramaters`)
+    // console.log(`We do not have paramaters`)
   }
 
   return static_vars;

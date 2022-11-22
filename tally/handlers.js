@@ -174,7 +174,7 @@ function getAccounts({command}) {
 }
 
 function getLedgers({command, parameters}) {
-  console.log(`getLedgers: parameters=${JSON.stringify(parameters, null, 2)}`);
+  // console.log(`getLedgers: parameters=${JSON.stringify(parameters, null, 2)}`);
   const ledgerListRequest = get_ledgers_list_request(parameters);
 
   return new Promise((resolve, reject) => {

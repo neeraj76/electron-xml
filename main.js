@@ -109,7 +109,7 @@ function executeTallyCommand(command, parameters) {
       // If the command thing misbehaves then we can pass it in the parameters
       tallyCommandMap[command].handler.apply(null, args)
           .then(({response, request}) => {
-            console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
+            // console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
             // mainWindow.webContents.send('command:response', {request, response});
             resolve({request, response})
           })
@@ -130,16 +130,16 @@ ipcMain.on('tally:command', (event, {command, targetCompany}) => {
       });
 })
 
-ipcMain.on('tally:command:ledgers:list', (event, parameters) => {
-  console.log(`Tally Request: ${parameters.company}`);
-  executeTallyCommand('LEDGERS', parameters)
+ipcMain.on('tally:command:ledgers:list', (event, {targetCompany}) => {
+  // console.log(`Tally Request: ${parameters.targetCompany}`);
+  executeTallyCommand('LEDGERS', {targetCompany})
       .then(({request, response}) => {
         mainWindow.webContents.send('tally:command:ledgers:list', {request, response});
       });
 })
 
 ipcMain.on('tally:command:companies:list', (event, parameters) => {
-  console.log(`Tally Request: ${parameters}`);
+  // console.log(`Tally Request: ${parameters}`);
   executeTallyCommand('COMPANIES')
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command:companies:list', {request, response});
@@ -147,10 +147,13 @@ ipcMain.on('tally:command:companies:list', (event, parameters) => {
 })
 
 ipcMain.on('tally:command:companies:current', (event, parameters) => {
-  console.log(`Tally Request: ${parameters}`);
+  // console.log(`Tally Request: ${JSON.stringify(parameters)}`);
   executeTallyCommand('CURRENTCOMPANY')
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command:companies:current', {request, response});
+      })
+      .catch(error => {
+        console.error(`tally:command:companies:current: error=${error}`)
       });
 })
 
