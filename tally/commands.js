@@ -72,7 +72,6 @@ const tallyCommandMap = {
 }
 
 const tallyParameterMap = {
-  // ledgerGroupName, parentLedgerGroupName
   'LEDGERGROUP': [
     {
       name: 'ledgerGroupName',
@@ -84,7 +83,6 @@ const tallyParameterMap = {
     }
   ],
 
-  // ledgerName, parentLedgerGroupName, openingAmount
   'LEDGER': [
     {
       name: 'ledgerName',
@@ -100,12 +98,11 @@ const tallyParameterMap = {
     }
   ],
 
-  // targetCompany, voucherType, voucherDate, debitLedger, creditLedger, amount, narration
   'VOUCHER': [
-    {
-      name: 'targetCompany',
-      type: 'string'
-    },
+    // {
+    //   name: 'targetCompany',
+    //   type: 'string'
+    // },
     {
       name: 'voucherType',
       type: 'string'
@@ -133,9 +130,70 @@ const tallyParameterMap = {
   ],
 
   // targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries
-  'VOUCHERSPLIT': {
-    handler: handleCreateVoucherSplit
-  }
+  // Haven't tested its working yet
+  'VOUCHERSPLIT': [
+    // {
+    //   name: 'targetCompany',
+    //   type: 'string'
+    // },
+    {
+      name: 'voucherType',
+      type: 'string'
+    },
+    {
+      name: 'voucherDate',
+      type: 'date'
+    },
+    {
+      name: 'narration',
+      type: 'string'
+    }
+  ],
+
+  'UNIT': [
+    {
+      name: 'unitName',
+      type: 'string'
+    }
+  ],
+
+  'STOCKGROUP': [
+    {
+      name: 'stockGroupName',
+      type: 'string'
+    },
+    {
+      name: 'parentStockGroupName',
+      type: 'string'
+    }
+  ],
+
+  'STOCKITEM': [
+    {
+      name: 'stockItemName',
+      type: 'string'
+    },
+    {
+      name: 'parentStockGroupName',
+      type: 'string'
+    },
+    {
+      name: 'unitName',
+      type: 'string'
+    },
+    {
+      name: 'openPositionType',
+      type: 'string'
+    },
+    {
+      name: 'openPositionQuantity',
+      type: 'decimal'
+    },
+    {
+      name: 'openPositionAmount',
+      type: 'decimal'
+    }
+  ],
 }
 
 

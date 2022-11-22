@@ -40,7 +40,8 @@ const get_static_variables = (parameters) => {
 
   if (parameters !== undefined) {
     console.log(`get_static_variables: parameters=${JSON.stringify(parameters)}`);
-    if (Object.keys(parameters).includes('company')) {
+    if (parameters.company !== undefined) {
+      console.log(`company=${parameters.company} typeof(company)=${typeof parameters.company}`)
       static_vars = {...static_vars, SVCURRENTCOMPANY: parameters.company};
     }
     console.log(`get_static_variables: parameters=${JSON.stringify(static_vars)}`);
