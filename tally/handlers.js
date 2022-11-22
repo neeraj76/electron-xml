@@ -556,10 +556,10 @@ function handleCreateVoucher(target_company, voucher_type, voucher_date, debit_l
 }
 
 // The data must be a javascript data instance
-function handleCreateVoucherSplit(voucher_type, voucher_date, narration, debit_entries, credit_entries) {
+function handleCreateVoucherSplit(target_company, voucher_type, voucher_date, narration, debit_entries, credit_entries) {
   // const date = ExcelDateToJSDate(excel_date);
   const reqIdStr = `Create VoucherSplit: ${voucher_type} ${DateToStringDate(voucher_date)} [DR:${debit_entries} CR:${credit_entries}]`;
-  const createVoucherSplitRequest = create_vouchersplit_request(voucher_type, voucher_date, narration, debit_entries, credit_entries);
+  const createVoucherSplitRequest = create_vouchersplit_request(target_company, voucher_type, voucher_date, narration, debit_entries, credit_entries);
 
   return createTallyVoucherPromise(createVoucherSplitRequest, reqIdStr);
 }

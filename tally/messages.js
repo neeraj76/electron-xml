@@ -460,7 +460,7 @@ const create_voucher_request = (target_company, voucher_type, date, debit_ledger
 }
 
 
-const create_vouchersplit_request = (voucher_type, date, narration, debit_entries, credit_entries) => {
+const create_vouchersplit_request = (target_company, voucher_type, date, narration, debit_entries, credit_entries) => {
   const header = {
     ...get_version_1_import_header(),
     TYPE: "Data",
@@ -509,7 +509,9 @@ const create_vouchersplit_request = (voucher_type, date, narration, debit_entrie
   }
 
   const body = {
-    DESC: {},
+    DESC: {
+      STATICVARIABLES: get_static_variables({company: target_company})
+    },
     DATA: {
       TALLYMESSAGE: {
         VOUCHER: [voucher]
