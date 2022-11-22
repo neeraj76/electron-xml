@@ -143,6 +143,9 @@ ipcMain.on('tally:command:companies:list', (event, parameters) => {
   executeTallyCommand('COMPANIES')
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command:companies:list', {request, response});
+      })
+      .catch(error => {
+        console.error(`tally:command:companies:list: error=${error}`)
       });
 })
 
