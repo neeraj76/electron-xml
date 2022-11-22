@@ -547,7 +547,7 @@ function createTallyVoucherPromise(voucherRequest) {
 }
 
 // The data must be a javascript data instance
-function handleCreateVoucher(targetCompany, voucherType, voucherDate, debitLedger, creditLedger, amount, narration) {
+function handleCreateVoucher({targetCompany, voucherType, voucherDate, debitLedger, creditLedger, amount, narration}) {
   // const reqIdStr = `Create Voucher: ${voucherType} ${DateToStringDate(voucherDate)} [DR:${debitLedger} CR:${creditLedger}] ${amount}`;
   const createVoucherRequest = create_voucher_request(targetCompany, voucherType, voucherDate, debitLedger, creditLedger, amount, narration);
 

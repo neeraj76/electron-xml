@@ -172,37 +172,39 @@ const addBankTransactionToTally = (bankTransaction, targetCompany) => {
       }
 
       const transactionDate = DateFromString(bankTransaction['Transaction Date']);
-      const valueDate = DateFromString(bankTransaction['Value Date']);
+      const voucherDate = DateFromString(bankTransaction['Value Date']);
       if (debugFn) {
         console.log(`transactionDate=${transactionDate}`);
-        console.log(`valueDate=${valueDate}`);
+        console.log(`valueDate=${voucherDate}`);
       }
 
       // TBD: Is there a way to specify ValueDate in a voucher
       // Now we can integrate the actual voucher
-      let voucher_type;
-      let voucher_amount;
+      let voucherType;
+      let amount;
       if (Object.keys(bankTransaction).includes('Debit')) {
-        voucher_type = 'Payment';
-        voucher_amount = bankTransaction.Debit;
+        voucherType = 'Payment';
+        amount = bankTransaction.Debit;
       } else if (Object.keys(bankTransaction).includes('Credit')) {
-        voucher_type = 'Receipt';
-        voucher_amount = bankTransaction.Credit;
+        voucherType = 'Receipt';
+        amount = bankTransaction.Credit;
       } else {
         throw `Either of 'Debit' or 'Credit' has to be present.`
       }
-
-      const voucher_params = [
-        targetCompany,
-        voucher_type,
-        valueDate,
-        bankTransaction.Category,
-        bankTransaction.Bank,
-        voucher_amount,
-        bankTransaction.Description
+      // targetCompany, voucherType, voucherDate, debitLedger, creditLedger, amount, narration
+      const voucherParams = [
+        {
+          targetCompany,
+          voucherType,
+          voucherDate,
+          debitLedger: bankTransaction.Category,
+          creditLedger: bankTransaction.Bank,
+          amount,
+          narration: bankTransaction.Description
+        }
       ];
 
-      tallyCommandMap['VOUCHER'].handler.apply(null, voucher_params)
+      tallyCommandMap['VOUCHER'].handler.apply(null, voucherParams)
           .then((response) => {
             console.log("addBankTransactionToTally: Response=", response);
             response['id'] = bankTransaction.id;
