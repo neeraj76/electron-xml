@@ -40,9 +40,9 @@ const get_static_variables = (parameters) => {
 
   if (parameters !== undefined) {
     console.log(`get_static_variables: parameters=${JSON.stringify(parameters)}`);
-    if (parameters.company !== undefined) {
-      console.log(`company=${parameters.company} typeof(company)=${typeof parameters.company}`)
-      static_vars = {...static_vars, SVCURRENTCOMPANY: parameters.company};
+    if (parameters.targetCompany !== undefined) {
+      // console.log(`company=${parameters.company} typeof(company)=${typeof parameters.targetCompany}`)
+      static_vars = {...static_vars, SVCURRENTCOMPANY: parameters.targetCompany};
     }
     console.log(`get_static_variables: parameters=${JSON.stringify(static_vars)}`);
   } else {
@@ -447,7 +447,7 @@ const create_voucher_request = (target_company, voucher_type, date, debit_ledger
 
   const body = {
     DESC: {
-      STATICVARIABLES: get_static_variables({company: target_company})
+      STATICVARIABLES: get_static_variables({targetCompany: target_company})
     },
     DATA: {
       TALLYMESSAGE: {
@@ -511,7 +511,7 @@ const create_vouchersplit_request = (target_company, voucher_type, date, narrati
 
   const body = {
     DESC: {
-      STATICVARIABLES: get_static_variables({company: target_company})
+      STATICVARIABLES: get_static_variables({targetCompany: target_company})
     },
     DATA: {
       TALLYMESSAGE: {
