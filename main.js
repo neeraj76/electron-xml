@@ -158,7 +158,7 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
-const addBankTransactionToTally = (bankTransaction) => {
+const addBankTransactionToTally = (bankTransaction, targetCompany) => {
   const debugFn = false;
 
   return new Promise((resolve, reject) => {
@@ -193,6 +193,7 @@ const addBankTransactionToTally = (bankTransaction) => {
       }
 
       const voucher_params = [
+        targetCompany,
         voucher_type,
         valueDate,
         bankTransaction.Category,
@@ -216,9 +217,9 @@ const addBankTransactionToTally = (bankTransaction) => {
   });
 }
 
-ipcMain.on('tally:command:vouchers:add', (event, requestData) => {
-  const promises = requestData.map((row) => {
-    return addBankTransactionToTally(row);
+ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, rows}) => {
+  const promises = rows.map((row) => {
+    return addBankTransactionToTally(row, targetCompany);
   });
 
   Promise.all(promises)

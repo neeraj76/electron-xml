@@ -415,7 +415,7 @@ const create_ledger_group_request = (ledger_group_name, parent_ledger_group_name
 
 
 
-const create_voucher_request = (voucher_type, date, debit_ledger, credit_ledger, amount, narration) => {
+const create_voucher_request = (target_company, voucher_type, date, debit_ledger, credit_ledger, amount, narration) => {
   const header = {
     ...get_version_1_import_header(),
     TYPE: "Data",
@@ -445,7 +445,9 @@ const create_voucher_request = (voucher_type, date, debit_ledger, credit_ledger,
   ]
 
   const body = {
-    DESC: {},
+    DESC: {
+      STATICVARIABLES: get_static_variables({company: target_company})
+    },
     DATA: {
       TALLYMESSAGE: {
         VOUCHER: [voucher]
