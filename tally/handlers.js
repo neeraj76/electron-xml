@@ -563,22 +563,22 @@ function handleCreateVoucherSplit({targetCompany, voucherType, voucherDate, narr
   return createTallyVoucherPromise(createVoucherSplitRequest);
 }
 
-function handleCreateUnitName(unitName) {
+function handleCreateUnitName({unitName}) {
   // const reqIdStr = `Create Unit: ${unitName}`;
   const createUnitNameRequest = create_unit_name_request(unitName);
 
   return tallyCommandExecute(createUnitNameRequest);
 }
 
-function handleCreateStockGroup(stockGroupName, parentStockGroupName) {
+function handleCreateStockGroup({stockGroupName, parentStockGroupName}) {
   // const reqIdStr = `Create StockGroup: ${stockGroupName} [parent:${parentStockGroupName}]`;
   const createStockGroupRequest = create_stock_group_request(stockGroupName, parentStockGroupName);
 
   return tallyCommandExecute(createStockGroupRequest);
 }
 
-function handleCreateStockItem(stockItemName, parentStockGroupName, unitName,
-                               openPositionType, openPositionQuantity, openPositionAmount) {
+function handleCreateStockItem({stockItemName, parentStockGroupName, unitName,
+                               openPositionType, openPositionQuantity, openPositionAmount}) {
   // const reqIdStr = `Create StockItem: ${stockItemName} [parent:${parentStockGroupName}] ${unitName}}`;
   const createStockItemRequest = create_stock_item_request(stockItemName, parentStockGroupName, unitName,
       openPositionType, openPositionQuantity, openPositionAmount);
