@@ -17,6 +17,8 @@ const updater = require('./updater');
 let mainWindow;
 
 function createWindow() {
+  console.log('Creating mainWindow');
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1500,
@@ -42,18 +44,25 @@ function createWindow() {
   }
 
   // Start a pingTimer
-  const tallyCheckTimer = setInterval(() => {
+  const tallyHealthInterval = setInterval(() => {
     tallyCheckServer()
         .then(response => {
-          mainWindow.webContents.send('tally:server:status:health', response.status === 'Success');
+          mainWindow?.webContents.send('tally:server:status:health', response.status === 'Success');
         })
         .catch(error => {
-          mainWindow.webContents.send('tally:server:status:health', false);
+          mainWindow?.webContents.send('tally:server:status:health', false);
         });
   }, 2000);
 
   // Check for updates after three seconds
-  setTimeout(updater, 3000);
+  const updateTimeout = setTimeout(updater, 3000);
+
+  mainWindow.on('closed', function () {
+    console.log('mainWindow closed');
+    mainWindow = null
+    clearInterval(tallyHealthInterval);
+    clearTimeout(updateTimeout);
+  });
 }
 
 // This method will be called when Electron has finished
@@ -75,6 +84,7 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
 
 ipcMain.on('tally:server:status', (event,) => {
   tallyCheckServer()
@@ -128,7 +138,7 @@ ipcMain.on('tally:command', (event, {command, targetCompany}) => {
       .then(({request, response})  => {
         mainWindow.webContents.send('tally:command', {request, response});
       });
-})
+});
 
 ipcMain.on('tally:command:ledgers:list', (event, {targetCompany}) => {
   // console.log(`Tally Request: ${parameters.targetCompany}`);
@@ -136,7 +146,7 @@ ipcMain.on('tally:command:ledgers:list', (event, {targetCompany}) => {
       .then(({request, response}) => {
         mainWindow.webContents.send('tally:command:ledgers:list', {request, response});
       });
-})
+});
 
 ipcMain.on('tally:command:companies:list', (event, parameters) => {
   // console.log(`Tally Request: ${parameters}`);
@@ -147,7 +157,7 @@ ipcMain.on('tally:command:companies:list', (event, parameters) => {
       .catch(error => {
         console.error(`tally:command:companies:list: error=${error}`)
       });
-})
+});
 
 ipcMain.on('tally:command:companies:current', (event, parameters) => {
   // console.log(`Tally Request: ${JSON.stringify(parameters)}`);
@@ -158,7 +168,7 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
       .catch(error => {
         console.error(`tally:command:companies:current: error=${error}`)
       });
-})
+});
 
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
@@ -238,4 +248,4 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, rows}) => {
         console.log(error);
       });
 
-})
+});
