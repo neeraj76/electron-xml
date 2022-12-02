@@ -1,5 +1,5 @@
 const {convertObjToXml, convertXmlToObj} = require("../xml/convert");
-const {tallyApiCall} = require("../services/api");
+const {tallyApiCall, tallyApiInit} = require("../services/api");
 
 const flagShowKeepAlive = false;
 const flagShowRequest = false;
@@ -18,6 +18,10 @@ const tallyCheckServerBoolean = () => {
           resolve(false);
         })
   });
+}
+
+const tallyInitServer = (url) => {
+  return tallyApiInit(url);
 }
 
 const tallyCheckServer = () => {
@@ -79,6 +83,7 @@ const tallyProcessRequestPromise = (requestObj) => {
 
 module.exports = {
   tallyProcessRequestPromise,
+  tallyInitServer,
   tallyCheckServer,
   tallyCheckServerBoolean
 }

@@ -3,10 +3,17 @@ const axios = require('axios');
 const debugAxios = false;
 const debugAxiosData = false;
 
-const initApi = (baseUrl) => {
-  const instance = axios.create({
-    baseURL: baseUrl
-  });
+let axiosTallyInstance;
+
+const tallyApiInit = (baseUrl) => {
+  console.log(`tallyApiInit: baseUrl=${baseUrl}`);
+
+  return new Promise((resolve, reject) => {
+    axiosTallyInstance = axios.create({
+        baseURL: baseUrl
+      });
+    resolve(axiosTallyInstance);
+  })
 }
 
 const tallyApiCall = ({req, timeout=3}) => {
@@ -36,6 +43,6 @@ const tallyApiCall = ({req, timeout=3}) => {
 }
 
 module.exports = {
-  initApi,
+  tallyApiInit,
   tallyApiCall
 }

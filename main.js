@@ -5,14 +5,11 @@ const isDev = require('electron-is-dev');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
-const { tallyCheckServer } = require("./tally/request");
+const { tallyCheckServer, tallyInitServer} = require("./tally/request");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
 const {DateFromString} = require("./utils/date");
 
 const updater = require('./updater');
-
-// Stephen Grider's udemy electron video
-// const _ = require('lodash');
 
 let mainWindow;
 
@@ -21,8 +18,8 @@ function createWindow() {
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1500,
-    height: 800,
+    width: 1400,
+    height: 900,
     webPreferences: {
       nodeIntegration: true,
       // enableRemoteModule: true,
@@ -59,9 +56,9 @@ function createWindow() {
 
   mainWindow.on('closed', function () {
     console.log('mainWindow closed');
-    mainWindow = null
     clearInterval(tallyHealthInterval);
     clearTimeout(updateTimeout);
+    mainWindow = null
   });
 }
 
@@ -85,6 +82,17 @@ app.on('activate', () => {
   }
 });
 
+
+ipcMain.on('tally:server:init', (event, {serverUrl}) => {
+
+  tallyInitServer(serverUrl)
+      .then(response => {
+        mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
+      })
+      .catch(error => {
+        mainWindow?.webContents.send('tally:server:init', false);
+      });
+});
 
 ipcMain.on('tally:server:status', (event,) => {
   tallyCheckServer()
