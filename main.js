@@ -100,8 +100,16 @@ app.on('activate', () => {
 ipcMain.on('tally:server:init', (event, {serverUrl}) => {
   tallyInitServer(serverUrl)
       .then(response => {
-        startTallyHealthMonitor();
         mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
+        tallyCheckServer()
+          .then(response => {
+            startTallyHealthMonitor();
+            mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
+          })
+          .catch(error => {
+            // throw error
+            console.error(`Error: ${JSON.stringify(error)}`);
+          });
       })
       .catch(error => {
         mainWindow?.webContents.send('tally:server:init', false);
