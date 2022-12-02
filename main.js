@@ -89,10 +89,10 @@ app.on('activate', () => {
 ipcMain.on('tally:server:status', (event,) => {
   tallyCheckServer()
       .then(response => {
-        mainWindow.webContents.send('tally:server:status', response.status === 'Success');
+        mainWindow?.webContents.send('tally:server:status', response.status === 'Success');
       })
       .catch(error => {
-        mainWindow.webContents.send('tally:server:status', false);
+        mainWindow?.webContents.send('tally:server:status', false);
       });
 });
 
@@ -102,12 +102,12 @@ ipcMain.on('excel:file:processor', (event, files) => {
     processExcelFile(filePath, processRowTally);
   });
 
-  mainWindow.webContents.send('excel:file:processor', files);
+  mainWindow?.webContents.send('excel:file:processor', files);
 });
 
 ipcMain.on('command:list', (event) => {
   // console.log(tallyReadOnlyCommands);
-  mainWindow.webContents.send('command:list', tallyReadOnlyCommands);
+  mainWindow?.webContents.send('command:list', tallyReadOnlyCommands);
 });
 
 function executeTallyCommand(command, parameters) {
@@ -119,12 +119,9 @@ function executeTallyCommand(command, parameters) {
       // If the command thing misbehaves then we can pass it in the parameters
       tallyCommandMap[command].handler.apply(null, args)
           .then(({response, request}) => {
-            // console.log("command:request:Promise response=", JSON.stringify(response, null, 2), " request=", request);
-            // mainWindow.webContents.send('command:response', {request, response});
             resolve({request, response})
           })
           .catch(error => {
-            // console.log(`command:tally:request  command=${command}`, error);
             reject(error);
           });
     }
@@ -136,7 +133,7 @@ ipcMain.on('tally:command', (event, {command, targetCompany}) => {
   // console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
   executeTallyCommand(command, {targetCompany})
       .then(({request, response})  => {
-        mainWindow.webContents.send('tally:command', {request, response});
+        mainWindow?.webContents.send('tally:command', {request, response});
       });
 });
 
@@ -144,7 +141,7 @@ ipcMain.on('tally:command:ledgers:list', (event, {targetCompany}) => {
   // console.log(`Tally Request: ${parameters.targetCompany}`);
   executeTallyCommand('LEDGERS', {targetCompany})
       .then(({request, response}) => {
-        mainWindow.webContents.send('tally:command:ledgers:list', {request, response});
+        mainWindow?.webContents.send('tally:command:ledgers:list', {request, response});
       });
 });
 
@@ -152,7 +149,7 @@ ipcMain.on('tally:command:companies:list', (event, parameters) => {
   // console.log(`Tally Request: ${parameters}`);
   executeTallyCommand('COMPANIES')
       .then(({request, response})  => {
-        mainWindow.webContents.send('tally:command:companies:list', {request, response});
+        mainWindow?.webContents.send('tally:command:companies:list', {request, response});
       })
       .catch(error => {
         console.error(`tally:command:companies:list: error=${error}`)
@@ -163,7 +160,7 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
   // console.log(`Tally Request: ${JSON.stringify(parameters)}`);
   executeTallyCommand('CURRENTCOMPANY')
       .then(({request, response})  => {
-        mainWindow.webContents.send('tally:command:companies:current', {request, response});
+        mainWindow?.webContents.send('tally:command:companies:current', {request, response});
       })
       .catch(error => {
         console.error(`tally:command:companies:current: error=${error}`)
@@ -242,7 +239,7 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, rows}) => {
   Promise.all(promises)
       .then((results) => {
         // console.log(results);
-        mainWindow.webContents.send('tally:command:vouchers:add', results);
+        mainWindow?.webContents.send('tally:command:vouchers:add', results);
       })
       .catch(error => {
         console.log(error);
