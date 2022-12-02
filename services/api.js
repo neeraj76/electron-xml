@@ -25,9 +25,13 @@ const tallyApiCall = ({req, timeout=3}) => {
   }
 
   return new Promise(function(resolve, reject) {
-    axios({
+    if (!axiosTallyInstance) {
+      reject('Tally server not initialized');
+    }
+
+    axiosTallyInstance({
       method: "post",
-      url: 'http://192.168.64.3:9000',
+      // url: 'http://192.168.64.3:9000',
       timeout: 1000 * timeout,
       data: req
     })

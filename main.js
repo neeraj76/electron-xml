@@ -13,6 +13,10 @@ const updater = require('./updater');
 
 let mainWindow;
 
+// let flagHealthMonitorStarted = false;
+let tallyHealthInterval;
+let updateTimeout;
+
 function createWindow() {
   console.log('Creating mainWindow');
 
@@ -40,8 +44,16 @@ function createWindow() {
     // win.webContents.openDevTools({ mode: 'detach' });
   }
 
+  mainWindow.on('closed', function () {
+    console.log('mainWindow closed');
+    stopTallyHealthMonitor();
+    mainWindow = null
+  });
+}
+
+const startTallyHealthMonitor = () => {
   // Start a pingTimer
-  const tallyHealthInterval = setInterval(() => {
+  tallyHealthInterval = setInterval(() => {
     tallyCheckServer()
         .then(response => {
           mainWindow?.webContents.send('tally:server:status:health', response.status === 'Success');
@@ -52,14 +64,16 @@ function createWindow() {
   }, 2000);
 
   // Check for updates after three seconds
-  const updateTimeout = setTimeout(updater, 3000);
+  updateTimeout = setTimeout(updater, 3000);
+}
 
-  mainWindow.on('closed', function () {
-    console.log('mainWindow closed');
+const stopTallyHealthMonitor = () => {
+  if (tallyHealthInterval) {
     clearInterval(tallyHealthInterval);
+  }
+  if (updateTimeout) {
     clearTimeout(updateTimeout);
-    mainWindow = null
-  });
+  }
 }
 
 // This method will be called when Electron has finished
@@ -84,9 +98,9 @@ app.on('activate', () => {
 
 
 ipcMain.on('tally:server:init', (event, {serverUrl}) => {
-
   tallyInitServer(serverUrl)
       .then(response => {
+        startTallyHealthMonitor();
         mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
       })
       .catch(error => {
