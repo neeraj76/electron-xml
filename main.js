@@ -2,6 +2,7 @@ const path = require('path');
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const isDev = require('electron-is-dev');
+const Storage = require('electron-store');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
@@ -15,6 +16,14 @@ let mainWindow;
 
 let tallyHealthInterval;
 let updateTimeout;
+let localStorage;
+
+const initialConfig = {
+  server: {
+    host: 'localhost',
+    port: 9000
+  }
+}
 
 function createWindow() {
   console.log('Creating mainWindow');
@@ -63,7 +72,7 @@ const startTallyHealthMonitor = () => {
   }, 2000);
 
   // Check for updates after three seconds
-  updateTimeout = setTimeout(updater, 3000);
+  updateTimeout = setTimeout(updater, 30000);
 }
 
 const stopTallyHealthMonitor = () => {
@@ -78,7 +87,19 @@ const stopTallyHealthMonitor = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(createWindow);
+app.on('ready', () => {
+  console.log('App is ready');
+  localStorage = new Storage();
+
+  if (localStorage) {
+    serverAddr = localStorage.get('server');
+    console.log(serverAddr);
+  } else {
+    localStorage.set('server', initialConfig.server)
+  }
+
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -89,32 +110,45 @@ app.on('window-all-closed', () => {
   }
 });
 
+// app.on('start', () => {
+//   console.log('App started');
+//   throw "Forced error"
+// })
+
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
 
+ipcMain.on('tally:ready', (event) => {
+  const server = localStorage.get('server');
+  console.log(`tally:ready: ${JSON.stringify(server)}`);
+  mainWindow?.webContents.send('tally:ready', server);
+});
 
-ipcMain.on('tally:server:init', (event, {serverAddr}) => {
-  console.log(`serverAddr=${JSON.stringify(serverAddr)}`);
+ipcMain.on('tally:server:set', (event, {serverAddr}) => {
+  console.log(`tally:server:set serverAddr=${JSON.stringify(serverAddr)}`);
+  if (localStorage) {
+    localStorage.set('server', serverAddr);
+  }
 
   tallyInitServer(serverAddr)
       .then(response => {
-        mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
+        mainWindow?.webContents.send('tally:server:set', response.status === 'Success');
         tallyCheckServer()
           .then(response => {
             startTallyHealthMonitor();
-            mainWindow?.webContents.send('tally:server:init', response);
+            mainWindow?.webContents.send('tally:server:set', response);
           })
           .catch(error => {
             // throw error
             console.error(`Error: ${JSON.stringify(error)}`);
-            mainWindow?.webContents.send('tally:server:init', error);
+            mainWindow?.webContents.send('tally:server:set', error);
           });
       })
       .catch(error => {
-        mainWindow?.webContents.send('tally:server:init', {status: "Failed", reason: JSON.stringify(error)});
+        mainWindow?.webContents.send('tally:server:set', {status: "Failed", reason: JSON.stringify(error)});
       });
 });
 
