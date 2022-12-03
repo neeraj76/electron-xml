@@ -5,12 +5,10 @@ const debugAxiosData = false;
 
 let axiosTallyInstance;
 
-const tallyApiInit = (baseUrl) => {
-  console.log(`tallyApiInit: baseUrl=${baseUrl}`);
-
+const tallyApiInit = (serverAddr) => {
   return new Promise((resolve, reject) => {
     axiosTallyInstance = axios.create({
-        baseURL: baseUrl
+        baseURL: `http://${serverAddr.host}:${serverAddr.port}`
       });
     resolve(axiosTallyInstance);
   })

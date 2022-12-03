@@ -13,7 +13,6 @@ const updater = require('./updater');
 
 let mainWindow;
 
-// let flagHealthMonitorStarted = false;
 let tallyHealthInterval;
 let updateTimeout;
 
@@ -97,22 +96,25 @@ app.on('activate', () => {
 });
 
 
-ipcMain.on('tally:server:init', (event, {serverUrl}) => {
-  tallyInitServer(serverUrl)
+ipcMain.on('tally:server:init', (event, {serverAddr}) => {
+  console.log(`serverAddr=${JSON.stringify(serverAddr)}`);
+
+  tallyInitServer(serverAddr)
       .then(response => {
         mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
         tallyCheckServer()
           .then(response => {
             startTallyHealthMonitor();
-            mainWindow?.webContents.send('tally:server:init', response.status === 'Success');
+            mainWindow?.webContents.send('tally:server:init', response);
           })
           .catch(error => {
             // throw error
             console.error(`Error: ${JSON.stringify(error)}`);
+            mainWindow?.webContents.send('tally:server:init', error);
           });
       })
       .catch(error => {
-        mainWindow?.webContents.send('tally:server:init', false);
+        mainWindow?.webContents.send('tally:server:init', {status: "Failed", reason: JSON.stringify(error)});
       });
 });
 
