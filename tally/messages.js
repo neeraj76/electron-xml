@@ -1,4 +1,4 @@
-const {dateTallyFormat} = require("./tally_date");
+const {dateTallyCreateVoucherFormat, dateTallyModifyVoucherFormat} = require("./tally_date");
 
 const flagDebugRequests = false;
 
@@ -413,16 +413,17 @@ const create_ledger_group_request = (ledger_group_name, parent_ledger_group_name
   return create_export_request(header, body)
 }
 
-
-
 const create_voucher_request = (target_company, voucher_type, date, debit_ledger, credit_ledger, amount, narration) => {
+  // console.log('create_voucher_request:', target_company, date);
+
   const header = {
     ...get_version_1_import_header(),
     TYPE: "Data",
     ID: "Vouchers"
   }
 
-  const dateStr = dateTallyFormat(date);
+  const dateStr = dateTallyCreateVoucherFormat(date);
+  // console.log(`create_voucher_request:dateStr=${dateStr}`);
 
   const voucher = {
     DATE: dateStr,
@@ -431,18 +432,21 @@ const create_voucher_request = (target_company, voucher_type, date, debit_ledger
     VOUCHERNUMBER: 1
   };
 
-  voucher['ALLLEDGERENTRIES.LIST'] = [
+  const debit_entries = [
     {
-      LEDGERNAME: debit_ledger,
-      ISDEEMEDPOSITIVE: "Yes",
-      AMOUNT: -amount
-    },
-    {
-      LEDGERNAME: credit_ledger,
-      ISDEEMEDPOSITIVE: "No",
-      AMOUNT: amount
+      ledger_account: debit_ledger,
+      amount: amount
     }
-  ]
+  ];
+
+  const credit_entries = [
+    {
+      ledger_account: credit_ledger,
+      amount: amount
+    }
+  ];
+
+  voucher['ALLLEDGERENTRIES.LIST'] = create_ledger_entries_list(debit_entries, credit_entries);
 
   const body = {
     DESC: {
@@ -459,6 +463,127 @@ const create_voucher_request = (target_company, voucher_type, date, debit_ledger
 
 }
 
+const delete_voucher_request = (target_company, date, master_id) => {
+  // console.log('delete_voucher_request:', target_company, date, master_id);
+
+  const header = {
+    ...get_version_1_import_header(),
+    TYPE: "Data",
+    ID: "Vouchers"
+  }
+
+  const dateStr = dateTallyModifyVoucherFormat(date);
+  // console.log(`delete_voucher_request:dateStr=${dateStr}`);
+
+  const voucher = {
+    '$': {
+      DATE: dateStr,
+      TAGNAME: 'Master ID',
+      TAGVALUE: master_id,
+      Action: "Delete"
+    }
+  };
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: get_static_variables({targetCompany: target_company})
+    },
+    DATA: {
+      TALLYMESSAGE: {
+        VOUCHER: [voucher]
+      }
+    }
+  }
+
+  return create_export_request(header, body);
+}
+
+const modify_voucher_request = (target_company, date, master_id, debit_ledger, credit_ledger, amount, narration) => {
+  // console.log('modify_voucher_request:', target_company, date, master_id, JSON.stringify(values));
+
+  const header = {
+    ...get_version_1_import_header(),
+    TYPE: "Data",
+    ID: "Vouchers"
+  }
+
+  const dateStr = dateTallyModifyVoucherFormat(date);
+
+  const voucher = {
+    '$': {
+      DATE: dateStr,
+      TAGNAME: 'Master ID',
+      TAGVALUE: master_id,
+      Action: "Alter"
+    }
+  };
+
+  if (debit_ledger && credit_ledger && amount) {
+    const debit_entries = [
+      {
+        ledger_account: debit_ledger,
+        amount: amount
+      }
+    ];
+
+    const credit_entries = [
+      {
+        ledger_account: credit_ledger,
+        amount: amount
+      }
+    ];
+
+    voucher['ALLLEDGERENTRIES.LIST'] = create_ledger_entries_list(debit_entries, credit_entries);
+  }
+
+  if (narration) {
+    voucher['NARRATION'] = narration;
+  }
+
+  const body = {
+    DESC: {
+      STATICVARIABLES: get_static_variables({targetCompany: target_company})
+    },
+    DATA: {
+      TALLYMESSAGE: {
+        VOUCHER: [voucher]
+      }
+    }
+  }
+
+  return create_export_request(header, body);
+}
+
+const create_ledger_entries_list = (debit_entries, credit_entries) => {
+  const ledger_entries = [];
+  let debit_total = 0;
+  debit_entries.forEach(dentry => {
+    ledger_entries.push({
+      LEDGERNAME: dentry.ledger_account,
+      ISDEEMEDPOSITIVE: "Yes",
+      AMOUNT: -dentry.amount
+    });
+    debit_total += dentry.amount;
+  })
+
+  let credit_total = 0;
+  credit_entries.forEach(dentry => {
+    ledger_entries.push({
+      LEDGERNAME: dentry.ledger_account,
+      ISDEEMEDPOSITIVE: "No",
+      AMOUNT: dentry.amount
+    });
+    credit_total += dentry.amount;
+  })
+
+  const net_diff = credit_total - debit_total;
+  if (net_diff > 0.00001) {
+    console.error(`Error: The total debit=${debit_total} does not match total credit =${credit_total}`);
+    return;
+  }
+
+  return ledger_entries;
+}
 
 const create_vouchersplit_request = (target_company, voucher_type, date, narration, debit_entries, credit_entries) => {
   const header = {
@@ -467,7 +592,7 @@ const create_vouchersplit_request = (target_company, voucher_type, date, narrati
     ID: "Vouchers"
   }
 
-  const dateStr = dateTallyFormat(date);
+  const dateStr = dateTallyCreateVoucherFormat(date);
 
   const voucher = {
     DATE: dateStr,
@@ -481,32 +606,7 @@ const create_vouchersplit_request = (target_company, voucher_type, date, narrati
     console.log(`credit_entries:${credit_entries}`);
   }
 
-  voucher['ALLLEDGERENTRIES.LIST'] = []
-  let debit_total = 0;
-  debit_entries.forEach(dentry => {
-    voucher['ALLLEDGERENTRIES.LIST'].push({
-      LEDGERNAME: dentry.ledger_account,
-      ISDEEMEDPOSITIVE: "Yes",
-      AMOUNT: -dentry.amount
-    });
-    debit_total += dentry.amount;
-  })
-
-  let credit_total = 0;
-  credit_entries.forEach(dentry => {
-    voucher['ALLLEDGERENTRIES.LIST'].push({
-      LEDGERNAME: dentry.ledger_account,
-      ISDEEMEDPOSITIVE: "No",
-      AMOUNT: dentry.amount
-    });
-    credit_total += dentry.amount;
-  })
-
-  const net_diff = credit_total - debit_total;
-  if (net_diff > 0.00001) {
-    console.error(`Error: The total debit=${debit_total} does not match total credit =${credit_total}`);
-    return;
-  }
+  voucher['ALLLEDGERENTRIES.LIST'] = create_ledger_entries_list(debit_entries, credit_entries);
 
   const body = {
     DESC: {
@@ -643,6 +743,8 @@ module.exports = {
   create_ledger_request,
   create_ledger_group_request,
   create_voucher_request,
+  delete_voucher_request,
+  modify_voucher_request,
   create_vouchersplit_request,
   create_unit_name_request,
   create_stock_group_request,

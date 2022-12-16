@@ -1,5 +1,6 @@
 const { format: formatDate, parse: parseDate } = require('date-fns');
 const isoDateFormat = "yyyy-MM-dd";
+const isoFormat = "yyyy-MM-ddTHH:mm:ss";
 
 const DateToString = (date, format='ISO-Date') => {
   if (format === 'ISO-Date') {
@@ -17,12 +18,16 @@ const DateToStringTime = (date) => {
   return DateToString(date).split('T')[1];
 }
 
-const DateFromString = (dateStr, format='ISO-Date') => {
+const DateFromDateString = (dateStr, format='ISO-Date') => {
   // third param is referenceData: defines values missing from the parsed dateString
   if (format === 'ISO-Date') {
     format = isoDateFormat;
   }
   return parseDate(dateStr, format, new Date());
+}
+
+const DateFromISOString = (dateStr) => {
+  return new Date(dateStr);
 }
 
 const isDate = (val) => {
@@ -33,6 +38,7 @@ module.exports = {
   DateToString,
   DateToStringDate,
   DateToStringTime,
-  DateFromString,
+  DateFromDateString,
+  DateFromISOString,
   isDate
 }

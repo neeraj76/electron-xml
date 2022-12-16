@@ -8,7 +8,7 @@ const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
 const { tallyCheckServer, tallyInitServer} = require("./tally/request");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
-const {DateFromString} = require("./utils/date");
+const {DateFromDateString, DateFromISOString} = require("./utils/date");
 
 const updater = require('./updater');
 
@@ -72,7 +72,7 @@ const startTallyHealthMonitor = () => {
   }, 2000);
 
   // Check for updates after three seconds
-  updateTimeout = setTimeout(updater, 30000);
+  updateTimeout = setTimeout(updater, 3000);
 }
 
 const stopTallyHealthMonitor = () => {
@@ -121,10 +121,10 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on('tally:ready', (event) => {
+ipcMain.on('tally:ui:ready', (event) => {
   const server = localStorage.get('server');
   console.log(`tally:ready: ${JSON.stringify(server)}`);
-  mainWindow?.webContents.send('tally:ready', server);
+  mainWindow?.webContents.send('tally:ui:ready', server);
 });
 
 ipcMain.on('tally:server:set', (event, {serverAddr}) => {
@@ -233,59 +233,76 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
       });
 });
 
+const getVoucherDate = (voucher) => {
+  return DateFromDateString(voucher['Value Date'])
+}
+
+const getVoucherFields = (voucher, bank) => {
+  // TBD: Is there a way to specify ValueDate in a voucher
+  // Now we can integrate the actual voucher
+  let voucherType;
+  let amount;
+  if (Object.keys(voucher).includes('Debit')) {
+    voucherType = 'Payment';
+    amount = voucher.Debit;
+  } else if (Object.keys(voucher).includes('Credit')) {
+    voucherType = 'Receipt';
+    amount = voucher.Credit;
+  } else {
+    throw `Either of 'Debit' or 'Credit' has to be present.`
+  }
+
+  const debitLedger = voucher.Category;
+  const creditLedger = bank;
+  const narration = voucher.Description;
+
+  return {voucherType, amount, debitLedger, creditLedger, narration};
+}
+
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
-const addBankTransactionToTally = (bankTransaction, targetCompany) => {
+const addBankTransactionToTally = (voucher, targetCompany, bank) => {
   const debugFn = false;
 
   return new Promise((resolve, reject) => {
-    if (!('Bank' in bankTransaction) || bankTransaction.Bank === "") {
-      throw `'Bank' is not specified in the transaction`;
+    if (!bank) {
+      throw `'Bank' is not specified`;
     }
 
-    if ('Category' in bankTransaction) {
+    if ('Category' in voucher) {
       if (debugFn) {
-        console.log(`addBankTransactionToTally: bankTransaction=${JSON.stringify(bankTransaction, null, 2)}`);
+        console.log(`addBankTransactionToTally: bankTransaction=${JSON.stringify(voucher, null, 2)}`);
       }
 
-      const transactionDate = DateFromString(bankTransaction['Transaction Date']);
-      const voucherDate = DateFromString(bankTransaction['Value Date']);
+      const transactionDate = DateFromDateString(voucher['Transaction Date']);
+      const voucherDate = getVoucherDate(voucher);
       if (debugFn) {
         console.log(`transactionDate=${transactionDate}`);
         console.log(`valueDate=${voucherDate}`);
       }
 
-      // TBD: Is there a way to specify ValueDate in a voucher
-      // Now we can integrate the actual voucher
-      let voucherType;
-      let amount;
-      if (Object.keys(bankTransaction).includes('Debit')) {
-        voucherType = 'Payment';
-        amount = bankTransaction.Debit;
-      } else if (Object.keys(bankTransaction).includes('Credit')) {
-        voucherType = 'Receipt';
-        amount = bankTransaction.Credit;
-      } else {
-        throw `Either of 'Debit' or 'Credit' has to be present.`
-      }
+      const {voucherType, amount, debitLedger, creditLedger, narration} = getVoucherFields(voucher, bank);
+
       // targetCompany, voucherType, voucherDate, debitLedger, creditLedger, amount, narration
       const voucherParams = [
         {
           targetCompany,
           voucherType,
           voucherDate,
-          debitLedger: bankTransaction.Category,
-          creditLedger: bankTransaction.Bank,
+          debitLedger,
+          creditLedger,
           amount,
-          narration: bankTransaction.Description
+          narration
         }
       ];
 
-      tallyCommandMap['VOUCHER'].handler.apply(null, voucherParams)
+      tallyCommandMap['VOUCHER_ADD'].handler.apply(null, voucherParams)
           .then((response) => {
-            console.log("addBankTransactionToTally: Response=", response);
-            response['id'] = bankTransaction.id;
+            if (debugFn) {
+              console.log("addBankTransactionToTally: Response=", response);
+            }
+            response['id'] = voucher.id;
             resolve(response);
           })
           .catch(error => {
@@ -297,15 +314,116 @@ const addBankTransactionToTally = (bankTransaction, targetCompany) => {
   });
 }
 
-ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, rows}) => {
-  const promises = rows.map((row) => {
-    return addBankTransactionToTally(row, targetCompany);
+const deleteTransactionFromTally = (voucher, targetCompany) => {
+  const debugFn = false;
+  return new Promise((resolve, reject) => {
+    if (debugFn) {
+      console.log(JSON.stringify(voucher));
+    }
+
+    // targetCompany, voucherType, voucherDate, masterId
+    const voucherParams = [
+      {
+        targetCompany,
+        voucherType: "Mock",
+        voucherDate: DateFromISOString(voucher['Value Date']),
+        masterId: voucher.VoucherId
+      }
+    ];
+
+    tallyCommandMap['VOUCHER_DELETE'].handler.apply(null, voucherParams)
+        .then((response) => {
+          if (debugFn) {
+            console.log("deleteTransactionFromTally: Response=", response);
+          }
+          response['id'] = voucher.id;
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+  });
+}
+
+const modifyTransactionInTally = (voucher, targetCompany, values) => {
+  return new Promise((resolve, reject) => {
+
+    // targetCompany, voucherType, voucherDate, masterId
+    const voucherParams = [
+      {
+        targetCompany,
+        voucherType: "Mock",
+        voucherDate: DateFromISOString(voucher['Value Date']),
+        masterId: voucher.VoucherId,
+      }
+    ];
+
+    if (Object.keys(values).includes("Category")) {
+      console.log(`Need to update ledgers`);
+      console.log(`voucher=${JSON.stringify(voucher)}`);
+      voucherParams[0].debitLedger = values.Category;
+      voucherParams[0].creditLedger = voucher.Bank;
+      voucherParams[0].amount = voucher.amount;
+      console.log(`voucherParams=${JSON.stringify(voucherParams)}`);
+    }
+
+    tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
+        .then((response) => {
+          console.log("deleteTransactionFromTally: Response=", response);
+          response['id'] = voucher.id;
+          resolve(response);
+        })
+        .catch(error => {
+          reject(error);
+        });
+  });
+}
+
+ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}) => {
+  const promises = vouchers.map((voucher) => {
+    return addBankTransactionToTally(voucher, targetCompany, bank);
   });
 
   Promise.all(promises)
       .then((results) => {
         // console.log(results);
         mainWindow?.webContents.send('tally:command:vouchers:add', results);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+});
+
+ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) => {
+  // console.log(`targetCompany=${targetCompany}`);
+
+  const promises = vouchers.map((voucher) => {
+    return deleteTransactionFromTally(voucher, targetCompany);
+  });
+
+  Promise.all(promises)
+      .then((results) => {
+        // console.log(results);
+        mainWindow?.webContents.send('tally:command:vouchers:delete', results);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+});
+
+ipcMain.on('tally:command:vouchers:modify', (event, {targetCompany, vouchers, values}) => {
+  // console.log(`targetCompany=${targetCompany} values=${JSON.stringify(values)}`);
+
+  const promises = vouchers.map((voucher) => {
+    return modifyTransactionInTally(voucher, targetCompany, values);
+  });
+
+  Promise.all(promises)
+      .then((results) => {
+        // console.log(results);
+        mainWindow?.webContents.send('tally:command:vouchers:delete', results);
       })
       .catch(error => {
         console.log(error);

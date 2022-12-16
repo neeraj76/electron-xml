@@ -2,6 +2,8 @@ const {
   handleCreateLedgerGroup,
   handleCreateLedger,
   handleCreateVoucher,
+  handleDeleteVoucher,
+  handleModifyVoucher,
   handleCreateVoucherSplit,
   getAccounts,
   getLedgers,
@@ -22,8 +24,14 @@ const tallyCommandMap = {
   'LEDGER': {
     handler: handleCreateLedger
   },
-  'VOUCHER': {
+  'VOUCHER_ADD': {
     handler: handleCreateVoucher
+  },
+  'VOUCHER_DELETE': {
+    handler: handleDeleteVoucher
+  },
+  'VOUCHER_MODIFY': {
+    handler: handleModifyVoucher
   },
   'VOUCHERSPLIT': {
     handler: handleCreateVoucherSplit
@@ -98,7 +106,7 @@ const tallyParameterMap = {
     }
   ],
 
-  'VOUCHER': [
+  'VOUCHER_ADD': [
     {
       name: 'voucherType',
       type: 'string'

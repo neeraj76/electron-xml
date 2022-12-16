@@ -12,6 +12,8 @@ const {
   create_ledger_group_request,
   create_ledger_request,
   create_voucher_request,
+  delete_voucher_request,
+  modify_voucher_request,
   create_vouchersplit_request,
   create_unit_name_request,
   create_stock_group_request,
@@ -551,6 +553,20 @@ function handleCreateVoucher({targetCompany, voucherType, voucherDate, debitLedg
   return createTallyVoucherPromise(createVoucherRequest);
 }
 
+function handleDeleteVoucher({targetCompany, voucherType, voucherDate, masterId}) {
+  // console.log(`handleDeleteVoucher:`, targetCompany, voucherType, voucherDate, masterId);
+  const deleteVoucherRequest = delete_voucher_request(targetCompany, voucherDate, masterId);
+
+  return createTallyVoucherPromise(deleteVoucherRequest);
+}
+
+function handleModifyVoucher({targetCompany, voucherType, voucherDate, masterId, debitLedger, creditLedger, amount, narration}) {
+  console.log(`handleModifyVoucher:`, targetCompany, voucherType, voucherDate, masterId, debitLedger, creditLedger, amount, narration);
+  const modifyVoucherRequest = modify_voucher_request(targetCompany, voucherDate, masterId, debitLedger, creditLedger, amount, narration);
+
+  return createTallyVoucherPromise(modifyVoucherRequest);
+}
+
 // The data must be a javascript data instance
 function handleCreateVoucherSplit({targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries}) {
   const createVoucherSplitRequest = create_vouchersplit_request(targetCompany, voucherType, voucherDate, narration, debitEntries, creditEntries);
@@ -612,6 +628,8 @@ module.exports = {
   handleCreateLedgerGroup,
   handleCreateLedger,
   handleCreateVoucher,
+  handleDeleteVoucher,
+  handleModifyVoucher,
   handleCreateVoucherSplit,
   getAccounts,
   getLedgers,
@@ -622,5 +640,5 @@ module.exports = {
   getDayBook,
   getCompanies,
   getCurrentCompany,
-  getLicenseInfo,
+  getLicenseInfo
 }

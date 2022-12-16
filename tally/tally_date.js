@@ -1,7 +1,14 @@
-const dateTallyFormat = (date) => {
-  return date.toISOString().split('T')[0].replaceAll('-','');
+const {endOfDay, format} = require("date-fns");
+
+const dateTallyCreateVoucherFormat = (date) => {
+  return format(endOfDay(date),"yyyyMMdd");
+}
+
+const dateTallyModifyVoucherFormat = (date) => {
+  return format(endOfDay(date),"dd-MMM-yyyy");
 }
 
 module.exports = {
-  dateTallyFormat
+  dateTallyCreateVoucherFormat,
+  dateTallyModifyVoucherFormat
 }
