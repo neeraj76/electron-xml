@@ -345,7 +345,7 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
   });
 }
 
-const modifyTransactionInTally = (voucher, targetCompany, values) => {
+const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
   return new Promise((resolve, reject) => {
 
     // targetCompany, voucherType, voucherDate, masterId
@@ -413,11 +413,11 @@ ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) =
 
 });
 
-ipcMain.on('tally:command:vouchers:modify', (event, {targetCompany, vouchers, values}) => {
-  // console.log(`targetCompany=${targetCompany} values=${JSON.stringify(values)}`);
+ipcMain.on('tally:command:vouchers:modify', (event, {targetCompany, vouchers, bank, values}) => {
+  console.log(`targetCompany=${targetCompany} bank=${bank} values=${JSON.stringify(values)}`);
 
   const promises = vouchers.map((voucher) => {
-    return modifyTransactionInTally(voucher, targetCompany, values);
+    return modifyTransactionInTally(voucher, targetCompany, bank, values);
   });
 
   Promise.all(promises)
