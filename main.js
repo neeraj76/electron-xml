@@ -398,7 +398,7 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
         narration
       }
     ];
-    
+
     tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
         .then((response) => {
           console.log("modifyTransactionInTally: response=", response);
@@ -423,6 +423,7 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}
       })
       .catch(error => {
         console.log(error);
+        mainWindow?.webContents.send('tally:command:vouchers:add', {error});
       });
 
 });
@@ -441,6 +442,7 @@ ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) =
       })
       .catch(error => {
         console.log(error);
+        mainWindow?.webContents.send('tally:command:vouchers:delete', {error});
       });
 
 });
@@ -455,10 +457,11 @@ ipcMain.on('tally:command:vouchers:modify', (event, {targetCompany, vouchers, ba
   Promise.all(promises)
       .then((results) => {
         // console.log(results);
-        mainWindow?.webContents.send('tally:command:vouchers:delete', results);
+        mainWindow?.webContents.send('tally:command:vouchers:modify', results);
       })
       .catch(error => {
         console.log(error);
+        mainWindow?.webContents.send('tally:command:vouchers:modify', {error});
       });
 
 });
