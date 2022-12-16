@@ -237,24 +237,54 @@ const getVoucherDate = (voucher) => {
   return DateFromDateString(voucher['Value Date'])
 }
 
-const getVoucherFields = (voucher, bank) => {
+const getVoucherFields = (voucher, bank, values) => {
   // TBD: Is there a way to specify ValueDate in a voucher
   // Now we can integrate the actual voucher
   let voucherType;
   let amount;
-  if (Object.keys(voucher).includes('Debit')) {
-    voucherType = 'Payment';
-    amount = voucher.Debit;
-  } else if (Object.keys(voucher).includes('Credit')) {
-    voucherType = 'Receipt';
-    amount = voucher.Credit;
+  let debitLedger;
+  let creditLedger;
+  let narration;
+
+  if (values) {
+    if (values.Category) {
+      if (Object.keys(voucher).includes('Debit')) {
+        voucherType = 'Payment';
+        amount = voucher.Debit;
+        debitLedger = values.Category;
+        creditLedger = bank;
+      } else if (Object.keys(voucher).includes('Credit')) {
+        voucherType = 'Receipt';
+        amount = voucher.Credit;
+        debitLedger = bank;
+        creditLedger = values.Category;
+      } else {
+        throw `Either of 'Debit' or 'Credit' has to be present.`
+      }
+    }
   } else {
-    throw `Either of 'Debit' or 'Credit' has to be present.`
+    if (Object.keys(voucher).includes('Debit')) {
+      voucherType = 'Payment';
+      amount = voucher.Debit;
+      debitLedger = voucher.Category;
+      creditLedger = bank;
+    } else if (Object.keys(voucher).includes('Credit')) {
+      voucherType = 'Receipt';
+      amount = voucher.Credit;
+      debitLedger = bank;
+      creditLedger = voucher.Category;
+    } else {
+      throw `Either of 'Debit' or 'Credit' has to be present.`
+    }
   }
 
-  const debitLedger = voucher.Category;
-  const creditLedger = bank;
-  const narration = voucher.Description;
+  if (values) {
+    if (values.Description) {
+      narration = values.Description
+    }
+  } else {
+    narration = voucher.Description;
+  }
 
   return {voucherType, amount, debitLedger, creditLedger, narration};
 }
@@ -300,7 +330,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
       tallyCommandMap['VOUCHER_ADD'].handler.apply(null, voucherParams)
           .then((response) => {
             if (debugFn) {
-              console.log("addBankTransactionToTally: Response=", response);
+              console.log("addBankTransactionToTally: response=", response);
             }
             response['id'] = voucher.id;
             resolve(response);
@@ -334,7 +364,7 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
     tallyCommandMap['VOUCHER_DELETE'].handler.apply(null, voucherParams)
         .then((response) => {
           if (debugFn) {
-            console.log("deleteTransactionFromTally: Response=", response);
+            console.log("deleteTransactionFromTally: response=", response);
           }
           response['id'] = voucher.id;
           resolve(response);
@@ -348,28 +378,32 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
 const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
   return new Promise((resolve, reject) => {
 
+    if (!Object.keys(values).includes("Category") && !Object.keys(values).includes("Description")) {
+      console.log(`Only 'Category' or 'Description' can be modified`)
+      return;
+    }
+
+    const {voucherType, amount, debitLedger, creditLedger, narration} = getVoucherFields(voucher, bank, values);
+
     // targetCompany, voucherType, voucherDate, masterId
     const voucherParams = [
       {
         targetCompany,
-        voucherType: "Mock",
+        voucherType,
         voucherDate: DateFromISOString(voucher['Value Date']),
         masterId: voucher.VoucherId,
+        debitLedger,
+        creditLedger,
+        amount,
+        narration
       }
     ];
 
-    if (Object.keys(values).includes("Category")) {
-      console.log(`Need to update ledgers`);
-      console.log(`voucher=${JSON.stringify(voucher)}`);
-      voucherParams[0].debitLedger = values.Category;
-      voucherParams[0].creditLedger = voucher.Bank;
-      voucherParams[0].amount = voucher.amount;
-      console.log(`voucherParams=${JSON.stringify(voucherParams)}`);
-    }
-
+    // console.log(`voucherParams=${JSON.stringify(voucherParams)}`);
+    
     tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
         .then((response) => {
-          console.log("deleteTransactionFromTally: Response=", response);
+          console.log("modifyTransactionInTally: response=", response);
           response['id'] = voucher.id;
           resolve(response);
         })
