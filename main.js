@@ -398,8 +398,6 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
         narration
       }
     ];
-
-    // console.log(`voucherParams=${JSON.stringify(voucherParams)}`);
     
     tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
         .then((response) => {
