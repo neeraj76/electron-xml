@@ -127,6 +127,13 @@ ipcMain.on('tally:ui:ready', (event) => {
   mainWindow?.webContents.send('tally:ui:ready', server);
 });
 
+ipcMain.on('tally:server:get', (event) => {
+  const server = localStorage.get('server');
+  console.log(`tally:ready: ${JSON.stringify(server)}`);
+  mainWindow?.webContents.send('tally:server:get', server);
+});
+
+
 ipcMain.on('tally:server:set', (event, {serverAddr}) => {
   console.log(`tally:server:set serverAddr=${JSON.stringify(serverAddr)}`);
   if (localStorage) {
