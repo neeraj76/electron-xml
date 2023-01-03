@@ -297,7 +297,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
 
   return new Promise((resolve, reject) => {
     if (!bank) {
-      throw `'Bank' is not specified`;
+      throw `'bank' is not specified`;
     }
 
     if ('Category' in voucher) {
