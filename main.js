@@ -302,7 +302,7 @@ const getVoucherFields = (voucher, bank, values) => {
 // Need bank name for which we have the statement
 // Make sure the bank name is added in the ledgers with parent as bank accounts
 // We need the conversions in the renderer before the call is made.
-const addBankTransactionToTally = (voucher, targetCompany, bank) => {
+const addBankTransactionToTally = (voucher, targetCompany, bank, index) => {
   const debugFn = false;
 
   return new Promise((resolve, reject) => {
@@ -344,7 +344,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
             if (debugFn) {
               console.log("addBankTransactionToTally: response=", response);
             }
-            response['id'] = voucher.id;
+            response['index'] = index;
             resolve(response);
           })
           .catch(error => {
@@ -356,7 +356,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
   });
 }
 
-const deleteTransactionFromTally = (voucher, targetCompany) => {
+const deleteTransactionFromTally = (voucher, targetCompany, index) => {
   const debugFn = false;
   return new Promise((resolve, reject) => {
     if (debugFn) {
@@ -378,7 +378,7 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
           if (debugFn) {
             console.log("deleteTransactionFromTally: response=", response);
           }
-          response['id'] = voucher.id;
+          response['index'] = index;
           resolve(response);
         })
         .catch(error => {
@@ -387,7 +387,7 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
   });
 }
 
-const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
+const modifyTransactionInTally = (voucher, targetCompany, bank, values, index) => {
   return new Promise((resolve, reject) => {
 
     if (!Object.keys(values).includes("category") && !Object.keys(values).includes("description")) {
@@ -416,7 +416,7 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
     tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
         .then((response) => {
           console.log("modifyTransactionInTally: response=", response);
-          response['id'] = voucher.id;
+          response['index'] = index;
           resolve(response);
         })
         .catch(error => {
@@ -429,13 +429,13 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}
   // console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
   // console.log(`bank:${bank} targetCompany:${targetCompany}`);
 
-  const promises = vouchers.map((voucher) => {
-    return addBankTransactionToTally(voucher, targetCompany, bank);
+  const promises = vouchers.map((voucher, index) => {
+    return addBankTransactionToTally(voucher, targetCompany, bank, index);
   });
 
   Promise.all(promises)
       .then((results) => {
-        // console.log(results);
+        console.log(results);
         mainWindow?.webContents.send('tally:command:vouchers:add', results);
       })
       .catch(error => {
@@ -448,8 +448,8 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}
 ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) => {
   // console.log(`targetCompany=${targetCompany}`);
 
-  const promises = vouchers.map((voucher) => {
-    return deleteTransactionFromTally(voucher, targetCompany);
+  const promises = vouchers.map((voucher, index) => {
+    return deleteTransactionFromTally(voucher, targetCompany, index);
   });
 
   Promise.all(promises)
@@ -467,8 +467,8 @@ ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) =
 ipcMain.on('tally:command:vouchers:modify', (event, {targetCompany, vouchers, bank, values}) => {
   console.log(`targetCompany=${targetCompany} bank=${bank} values=${JSON.stringify(values)}`);
 
-  const promises = vouchers.map((voucher) => {
-    return modifyTransactionInTally(voucher, targetCompany, bank, values);
+  const promises = vouchers.map((voucher, index) => {
+    return modifyTransactionInTally(voucher, targetCompany, bank, values, index);
   });
 
   Promise.all(promises)
