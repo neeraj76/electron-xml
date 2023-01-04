@@ -419,6 +419,8 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
 }
 
 ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}) => {
+  console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
+  
   const promises = vouchers.map((voucher) => {
     return addBankTransactionToTally(voucher, targetCompany, bank);
   });
