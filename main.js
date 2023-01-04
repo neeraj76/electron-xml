@@ -241,7 +241,8 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
 });
 
 const getVoucherDate = (voucher) => {
-  return DateFromDateString(voucher['Value Date'])
+  return new Date("2022-04-01");
+  // return Date.parse(voucher['valueDate']);
 }
 
 const getVoucherFields = (voucher, bank, values) => {
@@ -254,43 +255,43 @@ const getVoucherFields = (voucher, bank, values) => {
   let narration;
 
   if (values) {
-    if (values.Category) {
-      if (Object.keys(voucher).includes('Debit')) {
+    if (values.category) {
+      if (Object.keys(voucher).includes('debit')) {
         voucherType = 'Payment';
-        amount = voucher.Debit;
-        debitLedger = values.Category;
+        amount = voucher.debit;
+        debitLedger = values.category;
         creditLedger = bank;
-      } else if (Object.keys(voucher).includes('Credit')) {
+      } else if (Object.keys(voucher).includes('credit')) {
         voucherType = 'Receipt';
-        amount = voucher.Credit;
+        amount = voucher.credit;
         debitLedger = bank;
-        creditLedger = values.Category;
+        creditLedger = values.category;
       } else {
-        throw `Either of 'Debit' or 'Credit' has to be present.`
+        throw `Either of 'debit' or 'credit' has to be present.`
       }
     }
   } else {
-    if (Object.keys(voucher).includes('Debit')) {
+    if (Object.keys(voucher).includes('debit')) {
       voucherType = 'Payment';
-      amount = voucher.Debit;
-      debitLedger = voucher.Category;
+      amount = voucher.debit;
+      debitLedger = voucher.category;
       creditLedger = bank;
-    } else if (Object.keys(voucher).includes('Credit')) {
+    } else if (Object.keys(voucher).includes('credit')) {
       voucherType = 'Receipt';
-      amount = voucher.Credit;
+      amount = voucher.credit;
       debitLedger = bank;
-      creditLedger = voucher.Category;
+      creditLedger = voucher.category;
     } else {
-      throw `Either of 'Debit' or 'Credit' has to be present.`
+      throw `Either of 'debit' or 'credit' has to be present.`
     }
   }
 
   if (values) {
-    if (values.Description) {
-      narration = values.Description
+    if (values.description) {
+      narration = values.description
     }
   } else {
-    narration = voucher.Description;
+    narration = voucher.description;
   }
 
   return {voucherType, amount, debitLedger, creditLedger, narration};
@@ -307,12 +308,12 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
       throw `'bank' is not specified`;
     }
 
-    if ('Category' in voucher) {
+    if ('category' in voucher) {
       if (debugFn) {
         console.log(`addBankTransactionToTally: bankTransaction=${JSON.stringify(voucher, null, 2)}`);
       }
 
-      const transactionDate = DateFromDateString(voucher['Transaction Date']);
+      const transactionDate = DateFromDateString(voucher['transactionDate']);
       const voucherDate = getVoucherDate(voucher);
       if (debugFn) {
         console.log(`transactionDate=${transactionDate}`);
@@ -346,7 +347,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
             reject(error);
           });
     } else {
-      reject("Category is missing")
+      reject("category is missing")
     }
   });
 }
@@ -363,7 +364,7 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
       {
         targetCompany,
         voucherType: "Mock",
-        voucherDate: DateFromISOString(voucher['Value Date']),
+        voucherDate: DateFromISOString(voucher['valueDate']),
         masterId: voucher.VoucherId
       }
     ];
@@ -385,8 +386,8 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
 const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
   return new Promise((resolve, reject) => {
 
-    if (!Object.keys(values).includes("Category") && !Object.keys(values).includes("Description")) {
-      console.log(`Only 'Category' or 'Description' can be modified`)
+    if (!Object.keys(values).includes("category") && !Object.keys(values).includes("description")) {
+      console.log(`Only 'category' or 'description' can be modified`)
       return;
     }
 
@@ -397,7 +398,7 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
       {
         targetCompany,
         voucherType,
-        voucherDate: DateFromISOString(voucher['Value Date']),
+        voucherDate: DateFromISOString(voucher['valueDate']),
         masterId: voucher.VoucherId,
         debitLedger,
         creditLedger,
@@ -420,7 +421,8 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
 
 ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}) => {
   console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
-  
+  console.log(`bank:${bank} targetCompany:${targetCompany}`);
+
   const promises = vouchers.map((voucher) => {
     return addBankTransactionToTally(voucher, targetCompany, bank);
   });

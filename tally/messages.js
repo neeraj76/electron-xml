@@ -414,7 +414,7 @@ const create_ledger_group_request = (ledger_group_name, parent_ledger_group_name
 }
 
 const create_voucher_request = (target_company, voucher_type, date, debit_ledger, credit_ledger, amount, narration) => {
-  // console.log('create_voucher_request:', target_company, date);
+  console.log('create_voucher_request:', target_company, date);
 
   const header = {
     ...get_version_1_import_header(),
