@@ -535,7 +535,7 @@ function createTallyVoucherPromise(voucherRequest) {
         .then(response => {
           const voucherResponse = {
             status: response.status,
-            voucher_id: response.tallyResponse.LASTVCHID
+            voucherId: response.tallyResponse.LASTVCHID
           }
           resolve(voucherResponse);
         })

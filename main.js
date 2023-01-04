@@ -254,14 +254,16 @@ const getVoucherFields = (voucher, bank, values) => {
   let creditLedger;
   let narration;
 
+  // console.log(`voucher=${JSON.stringify(voucher, null, 2)}`);
+
   if (values) {
     if (values.category) {
-      if (Object.keys(voucher).includes('debit')) {
+      if (voucher.debit) {
         voucherType = 'Payment';
         amount = voucher.debit;
         debitLedger = values.category;
         creditLedger = bank;
-      } else if (Object.keys(voucher).includes('credit')) {
+      } else if (voucher.credit) {
         voucherType = 'Receipt';
         amount = voucher.credit;
         debitLedger = bank;
@@ -271,12 +273,12 @@ const getVoucherFields = (voucher, bank, values) => {
       }
     }
   } else {
-    if (Object.keys(voucher).includes('debit')) {
+    if (voucher.debit) {
       voucherType = 'Payment';
       amount = voucher.debit;
       debitLedger = voucher.category;
       creditLedger = bank;
-    } else if (Object.keys(voucher).includes('credit')) {
+    } else if (voucher.credit) {
       voucherType = 'Receipt';
       amount = voucher.credit;
       debitLedger = bank;
@@ -334,6 +336,8 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
           narration
         }
       ];
+
+      // console.log(`voucherParams:${JSON.stringify(voucherParams, null, 2)}`);
 
       tallyCommandMap['VOUCHER_ADD'].handler.apply(null, voucherParams)
           .then((response) => {
@@ -407,6 +411,8 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
       }
     ];
 
+    // console.log(`voucherParams:${JSON.stringify(voucherParams, null, 2)}`);
+
     tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
         .then((response) => {
           console.log("modifyTransactionInTally: response=", response);
@@ -420,8 +426,8 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
 }
 
 ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}) => {
-  console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
-  console.log(`bank:${bank} targetCompany:${targetCompany}`);
+  // console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
+  // console.log(`bank:${bank} targetCompany:${targetCompany}`);
 
   const promises = vouchers.map((voucher) => {
     return addBankTransactionToTally(voucher, targetCompany, bank);
