@@ -403,7 +403,7 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values, index) =
         targetCompany,
         voucherType,
         voucherDate: DateFromISOString(voucher['valueDate']),
-        masterId: voucher.VoucherId,
+        masterId: voucher.voucherId,
         debitLedger,
         creditLedger,
         amount,
