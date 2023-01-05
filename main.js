@@ -446,7 +446,8 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}
 });
 
 ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) => {
-  // console.log(`targetCompany=${targetCompany}`);
+  console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
+  console.log(`targetCompany:${targetCompany}`);
 
   const promises = vouchers.map((voucher, index) => {
     return deleteTransactionFromTally(voucher, targetCompany, index);
