@@ -356,7 +356,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
   });
 }
 
-const deleteTransactionFromTally = (voucher, targetCompany, index) => {
+const deleteTransactionFromTally = (voucher, targetCompany) => {
   const debugFn = false;
   return new Promise((resolve, reject) => {
     if (debugFn) {
@@ -377,7 +377,8 @@ const deleteTransactionFromTally = (voucher, targetCompany, index) => {
           if (debugFn) {
             console.log("deleteTransactionFromTally: response=", response);
           }
-          response['index'] = index;
+          response.id = voucher.id;
+          response.voucherId = voucher.voucherId;
           resolve(response);
         })
         .catch(error => {
@@ -446,16 +447,16 @@ ipcMain.on('tally:command:vouchers:add', (event, {targetCompany, vouchers, bank}
 });
 
 ipcMain.on('tally:command:vouchers:delete', (event, {targetCompany, vouchers}) => {
-  console.log(`Vouchers:${JSON.stringify(vouchers, null, 2)}`);
-  console.log(`targetCompany:${targetCompany}`);
+  console.log(`Delete Vouchers:${JSON.stringify(vouchers.map(voucher => voucher.voucherId), null, 2)}`);
+  // console.log(`targetCompany:${targetCompany}`);
 
-  const promises = vouchers.map((voucher, index) => {
-    return deleteTransactionFromTally(voucher, targetCompany, index);
+  const promises = vouchers.map((voucher) => {
+    return deleteTransactionFromTally(voucher, targetCompany);
   });
 
   Promise.all(promises)
       .then((results) => {
-        // console.log(results);
+        console.log(results);
         mainWindow?.webContents.send('tally:command:vouchers:delete', results);
       })
       .catch(error => {
