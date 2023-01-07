@@ -4,6 +4,7 @@ const debugAxios = false;
 const debugAxiosData = false;
 
 let axiosTallyInstance;
+const axiosRequestTimeout = 10000;
 
 const tallyApiInit = (serverAddr) => {
   return new Promise((resolve, reject) => {
@@ -29,8 +30,7 @@ const tallyApiCall = ({req, timeout=3}) => {
 
     axiosTallyInstance({
       method: "post",
-      // url: 'http://192.168.64.3:9000',
-      timeout: 1000 * timeout,
+      timeout: axiosRequestTimeout * timeout,
       data: req
     })
     .then(resp => {
