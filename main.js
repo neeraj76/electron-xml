@@ -8,7 +8,7 @@ const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
 const { tallyCheckServer, tallyInitServer} = require("./tally/request");
 const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
-const {DateFromDateString, DateFromISOString} = require("./utils/date");
+const {DateFromDateString, DateFromISOString, isDate} = require("./utils/date");
 
 const updater = require('./updater');
 
@@ -241,8 +241,9 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
 });
 
 const getVoucherDate = (voucher) => {
-  return new Date("2022-04-01");
-  // return Date.parse(voucher['valueDate']);
+  console.log(`voucher.transactionDate=${voucher.transactionDate} [${isDate(voucher.transactionDate)}]`);
+  // return new Date("2022-04-01");
+  return voucher.transactionDate;
 }
 
 const getVoucherFields = (voucher, bank, values) => {
@@ -315,11 +316,12 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
         console.log(`addBankTransactionToTally: bankTransaction=${JSON.stringify(voucher, null, 2)}`);
       }
 
-      const transactionDate = DateFromDateString(voucher['transactionDate']);
-      const voucherDate = getVoucherDate(voucher);
+      // const transactionDate = DateFromDateString(voucher['transactionDate']);
+      // const voucherDate = getVoucherDate(voucher);
+      const voucherDate = voucher.valueDate;
       if (debugFn) {
-        console.log(`transactionDate=${transactionDate}`);
-        console.log(`valueDate=${voucherDate}`);
+        // console.log(`transactionDate=${transactionDate}`);
+        console.log(`valueDate=${voucher.valueDate}`);
       }
 
       const {voucherType, amount, debitLedger, creditLedger, narration} = getVoucherFields(voucher, bank);
@@ -367,7 +369,8 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
       {
         targetCompany,
         voucherType: "Mock",
-        voucherDate: getVoucherDate(voucher),
+        // voucherDate: getVoucherDate(voucher),
+        voucherDate: voucher.valueDate,
         masterId: voucher.voucherId
       }
     ];
@@ -403,7 +406,8 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
       {
         targetCompany,
         voucherType,
-        voucherDate: getVoucherDate(voucher),
+        // voucherDate: getVoucherDate(voucher),
+        voucherDate: voucher.valueDate,
         masterId: voucher.voucherId,
         debitLedger,
         creditLedger,

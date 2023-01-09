@@ -9,7 +9,7 @@ exports.default = async function (context) {
   if (process.platform !== 'darwin') return;
 
   // let appName = context.package.productFilename;
-  let appName = 'TallyPad';
+  let appName = 'TallyKit';
   let appDir = context.appOutDir;
 
   let params = {
