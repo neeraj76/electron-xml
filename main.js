@@ -203,7 +203,6 @@ function executeTallyCommand(command, parameters) {
 }
 
 ipcMain.on('tally:command', (event, {command, targetCompany}) => {
-  // console.log(`Tally Request: ${command}. Old format, to be called only from dropdown.`);
   executeTallyCommand(command, {targetCompany})
       .then(({request, response})  => {
         mainWindow?.webContents.send('tally:command', {request, response});
@@ -211,7 +210,7 @@ ipcMain.on('tally:command', (event, {command, targetCompany}) => {
 });
 
 ipcMain.on('tally:command:ledgers:list', (event, {targetCompany}) => {
-  // console.log(`Tally Request: ${parameters.targetCompany}`);
+  // console.log(`tally:command: targetCompany=${targetCompany}`);
   executeTallyCommand('LEDGERS', {targetCompany})
       .then(({request, response}) => {
         mainWindow?.webContents.send('tally:command:ledgers:list', {request, response});
