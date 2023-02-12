@@ -1,9 +1,9 @@
 const electron = require('electron');
 const { processExcelFile } = require('./spreadsheet/excel');
 const { app, BrowserWindow, ipcMain } = electron;
-const { commandTester } = require('./tally/handlers');
+const { commandTester } = require('@glassball/tally');
 const {processRowTally} = require("./spreadsheet/excel_tally");
-const {tallyCheckServer, tallyCheckServerBoolean} = require("./tally/request");
+const {tallyCheckServer, tallyCheckServerBoolean} = require("@glassball/tally");
 
 let mainWindow;
 

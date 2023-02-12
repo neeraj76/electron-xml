@@ -1,4 +1,4 @@
-const { tallyCommands, tallyCommandMap, tallyParameterMap } = require('../tally/commands');
+const { tallyCommands, tallyCommandMap, tallyParameterMap } = require('@glassball/tally');
 
 const debugRow = true;
 const debugParameters = true;

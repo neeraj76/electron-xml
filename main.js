@@ -6,8 +6,12 @@ const Storage = require('electron-store');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
-const { tallyCheckServer, tallyInitServer} = require("./tally/request");
-const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("./tally/commands");
+// const { tallyCheckServer, tallyInitServer} = require("./tally/request");
+// const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("./tally/commands");
+
+const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
+const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
+
 const {DateFromDateString, DateFromISOString, isDate} = require("./utils/date");
 
 const updater = require('./updater');
@@ -93,7 +97,7 @@ app.on('ready', () => {
 
   if (localStorage) {
     serverAddr = localStorage.get('server');
-    console.log(serverAddr);
+    console.log('serverAddr:', serverAddr);
   } else {
     localStorage.set('server', initialConfig.server)
   }
