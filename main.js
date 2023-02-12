@@ -7,7 +7,7 @@ const Storage = require('electron-store');
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
 const { tallyCheckServer, tallyInitServer} = require("./tally/request");
-const {tallyReadOnlyCommands, tallyCommands, tallyCommandMap} = require("./tally/commands");
+const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("./tally/commands");
 const {DateFromDateString, DateFromISOString, isDate} = require("./utils/date");
 
 const updater = require('./updater');
@@ -179,18 +179,18 @@ ipcMain.on('excel:file:processor', (event, files) => {
 });
 
 ipcMain.on('command:list', (event) => {
-  // console.log(tallyReadOnlyCommands);
-  mainWindow?.webContents.send('command:list', tallyReadOnlyCommands);
+  // console.log(getTallyReadOnlyCommands());
+  mainWindow?.webContents.send('command:list', getTallyReadOnlyCommands());
 });
 
 function executeTallyCommand(command, parameters) {
   // This should be moved to a tally promise
   return new Promise((resolve, reject) => {
-    if (tallyCommands.includes(command)) {
+    if (getTallyCommands().includes(command)) {
       const args = [{command, parameters}]
 
       // If the command thing misbehaves then we can pass it in the parameters
-      tallyCommandMap[command].handler.apply(null, args)
+      getTallyCommandMap()[command].handler.apply(null, args)
           .then(({response, request}) => {
             resolve({request, response})
           })
@@ -340,7 +340,7 @@ const addBankTransactionToTally = (voucher, targetCompany, bank) => {
 
       // console.log(`voucherParams:${JSON.stringify(voucherParams, null, 2)}`);
 
-      tallyCommandMap['VOUCHER_ADD'].handler.apply(null, voucherParams)
+      getTallyCommandMap()['VOUCHER_ADD'].handler.apply(null, voucherParams)
           .then((response) => {
             if (debugFn) {
               console.log("addBankTransactionToTally: response=", response);
@@ -374,7 +374,7 @@ const deleteTransactionFromTally = (voucher, targetCompany) => {
       }
     ];
 
-    tallyCommandMap['VOUCHER_DELETE'].handler.apply(null, voucherParams)
+    getTallyCommandMap()['VOUCHER_DELETE'].handler.apply(null, voucherParams)
         .then((response) => {
           if (debugFn) {
             console.log("deleteTransactionFromTally: response=", response);
@@ -417,7 +417,7 @@ const modifyTransactionInTally = (voucher, targetCompany, bank, values) => {
 
     // console.log(`voucherParams:${JSON.stringify(voucherParams, null, 2)}`);
 
-    tallyCommandMap['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
+    getTallyCommandMap()['VOUCHER_MODIFY'].handler.apply(null, voucherParams)
         .then((response) => {
           // console.log("modifyTransactionInTally: response=", response);
           response.id = voucher.id;
