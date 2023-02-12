@@ -1,5 +1,6 @@
 {
-  "name": "videoinfo",
+  "name": "@glassball/electron-excel-tally",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main_local": "./local.js",
