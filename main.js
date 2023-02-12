@@ -6,13 +6,9 @@ const Storage = require('electron-store');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
-// const { tallyCheckServer, tallyInitServer} = require("./tally/request");
-// const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("./tally/commands");
 
 const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
 const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
-
-const {DateFromDateString, DateFromISOString, isDate} = require("./utils/date");
 
 const updater = require('./updater');
 
@@ -242,12 +238,6 @@ ipcMain.on('tally:command:companies:current', (event, parameters) => {
         console.error(`tally:command:companies:current: error=${error}`)
       });
 });
-
-const getVoucherDate = (voucher) => {
-  console.log(`voucher.transactionDate=${voucher.transactionDate} [${isDate(voucher.transactionDate)}]`);
-  // return new Date("2022-04-01");
-  return voucher.transactionDate;
-}
 
 const getVoucherFields = (voucher, bank, values) => {
   // TBD: Is there a way to specify ValueDate in a voucher
