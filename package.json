@@ -2,7 +2,6 @@
   "name": "@glassball/electron-excel-tally",
   "version": "1.0.0",
   "description": "",
-  "main_local": "./local.js",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
