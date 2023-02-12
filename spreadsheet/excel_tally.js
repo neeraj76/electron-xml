@@ -1,4 +1,4 @@
-const { tallyCommands, tallyCommandMap, tallyParameterMap } = require('@glassball/tally');
+const { getTallyCommands, getTallyCommandMap, getTallyParameterMap } = require('@glassball/tally');
 
 const debugRow = true;
 const debugParameters = true;
@@ -71,17 +71,17 @@ const processRowAsCommand = (row) => {
   }
   const row_active =  row_status !== 'Disabled' && row_status !== 'Inactive';
 
-  if (tallyCommands.includes(row_command)) {
+  if (getTallyCommands().includes(row_command)) {
     if (row_active) {
       let parameters = Object.keys(row).map(key => row[key]);
       if (debugParameters) {
         console.log(`parameters=${parameters}`)
       }
 
-      parameters = processParameters(parameters, tallyParameterMap[row_command]);
+      parameters = processParameters(parameters, getTallyParameterMap()[row_command]);
 
       // Can be Temp Disabled
-      tallyCommandMap[row_command].handler.apply(null, parameters)
+      getTallyCommandMap()[row_command].handler.apply(null, parameters)
           .then(response => {
             console.log(`processRowTally: response=${JSON.stringify(response)}`);
           })
