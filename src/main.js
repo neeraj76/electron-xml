@@ -41,11 +41,34 @@ function createWindow() {
 
   // and load the local.html of the app.
   // win.loadFile("local.html");
-  mainWindow.loadURL(
-      isDev
-          ? 'http://localhost:3000'
-          : `file://${path.join(__dirname, '../index.html')}`
-  );
+
+  // mainWindow.loadURL(
+  //     isDev
+  //         ? 'http://localhost:3000'
+  //         : `file://${path.join(__dirname, '../index.html')}`
+  // );
+
+  if (isDev) {
+    const clientPort = 3000;
+    const url = `http://localhost:${clientPort}`;
+    mainWindow.loadURL(url)
+        .then(response => {
+          console.log(`URL ${url} loaded successfully`);
+        })
+        .catch(error => {
+          if (error.code === 'ERR_CONNECTION_REFUSED') {
+            mainWindow.loadFile(path.join(__dirname, 'error.html'));
+            return;
+          }
+          // throw error;
+        });
+  } else {
+    const uiPackage = `@glassball/tallymate-ui`;
+    const packagePath = require.resolve(`${uiPackage}/build/index.html`)
+    console.log('packagePath:', packagePath);
+    mainWindow.loadFile(packagePath);
+  }
+
 
   // Open the DevTools.
   if (isDev) {
