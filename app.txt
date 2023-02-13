@@ -1,5 +1,5 @@
 npm install axios date-fns electron electron-is-dev electron-log electron-store electron-updater fluent-ffmpeg xlsx xml2js
 
 npm install --save-dev electron
-npm install axios date-fns  electron-is-dev electron-log electron-store electron-updater fluent-ffmpeg xlsx xml2js
-npm install @glassball/tally
+npm install axios date-fns  electron-is-dev electron-log electron-store electron-updater xlsx
+npm install --save-dev @glassball/tally
