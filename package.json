@@ -50,7 +50,7 @@
         {
           "target": "default",
           "arch": [
-            "arm64"
+            "universal"
           ]
         }
       ]
