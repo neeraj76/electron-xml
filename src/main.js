@@ -3,6 +3,7 @@ const path = require('path');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const isDev = require('electron-is-dev');
 const Storage = require('electron-store');
+const log = require('electron-log');
 
 const { processExcelFile } = require('./spreadsheet/excel');
 const { processRowTally } = require("./spreadsheet/excel_tally");
@@ -11,6 +12,7 @@ const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
 const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
 
 const updater = require('./updater');
+
 
 let mainWindow;
 
@@ -65,7 +67,8 @@ function createWindow() {
   } else {
     const uiPackage = `@glassball/tallymate-ui`;
     const packagePath = require.resolve(`${uiPackage}/build/index.html`)
-    console.log('packagePath:', packagePath);
+    // console.log('packagePath:', packagePath);
+    log.info('packagePath:', packagePath);
     mainWindow.loadFile(packagePath);
   }
 
