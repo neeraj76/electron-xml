@@ -47,6 +47,18 @@
     "mac": {
       "target": [
         {
+          "target": "default",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "mas",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
           "target": "mas-dev",
           "arch": [
             "universal"
