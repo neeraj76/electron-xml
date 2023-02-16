@@ -1,6 +1,6 @@
 const path = require('path');
 
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, Menu, BrowserWindow, ipcMain } = require('electron');
 const isDev = require('electron-is-dev');
 const Storage = require('electron-store');
 const log = require('electron-log');
@@ -10,10 +10,11 @@ const { processRowTally } = require("./spreadsheet/excel_tally");
 
 const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
 const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
-
+const {getBaseMenuTemplate, setSubmenuStatusById} = require("@glassball/electron-menu-base");
 const updater = require('./updater');
 
 
+let mainMenu;
 let mainWindow;
 
 let tallyHealthInterval;
@@ -83,6 +84,9 @@ function createWindow() {
     stopTallyHealthMonitor();
     mainWindow = null
   });
+
+  mainMenu = Menu.buildFromTemplate(getBaseMenuTemplate());
+  Menu.setApplicationMenu(mainMenu);
 }
 
 const startTallyHealthMonitor = () => {
