@@ -10,7 +10,7 @@ const { processRowTally } = require("./spreadsheet/excel_tally");
 
 const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
 const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
-const {getBaseMenuTemplate, setSubmenuStatusById} = require("@glassball/electron-menu-base");
+const {getBaseMenuTemplate, setSubmenuStatusById, closeWindow} = require("@glassball/electron-menu-base");
 const updater = require('./updater');
 
 
@@ -21,12 +21,16 @@ let tallyHealthInterval;
 let updateTimeout;
 let localStorage;
 
-const initialConfig = {
+const appConfig = {
+  app,
+  mainWindow,
+  mainMenu,
   server: {
     host: 'localhost',
     port: 9000
   }
 }
+
 
 function createWindow() {
   console.log('Creating mainWindow');
@@ -41,15 +45,6 @@ function createWindow() {
       contextIsolation: false
     },
   });
-
-  // and load the local.html of the app.
-  // win.loadFile("local.html");
-
-  // mainWindow.loadURL(
-  //     isDev
-  //         ? 'http://localhost:3000'
-  //         : `file://${path.join(__dirname, '../index.html')}`
-  // );
 
   if (isDev) {
     const clientPort = 3000;
@@ -85,7 +80,7 @@ function createWindow() {
     mainWindow = null
   });
 
-  mainMenu = Menu.buildFromTemplate(getBaseMenuTemplate());
+  mainMenu = Menu.buildFromTemplate(getBaseMenuTemplate(appConfig));
   Menu.setApplicationMenu(mainMenu);
 }
 
@@ -125,7 +120,7 @@ app.on('ready', () => {
     serverAddr = localStorage.get('server');
     console.log('serverAddr:', serverAddr);
   } else {
-    localStorage.set('server', initialConfig.server)
+    localStorage.set('server', appConfig.server)
   }
 
   createWindow();
@@ -150,6 +145,12 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+app.on('window-all-closed', ()=> {
+  closeWindow(appConfig);
+  mainWindow = null;
+});
+
 
 ipcMain.on('tally:ui:ready', (event) => {
   const server = localStorage.get('server');
