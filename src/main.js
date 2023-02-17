@@ -10,7 +10,7 @@ const { processRowTally } = require("./spreadsheet/excel_tally");
 
 const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
 const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
-const {getBaseMenuTemplate, closeWindow, activateWindow} = require("@glassball/electron-menu-base/lib/menu");
+const {getBaseMenuTemplate, closeWindow, activateWindow} = require("@glassball/electron-menu-base");
 const updater = require('./updater');
 
 
@@ -77,7 +77,8 @@ function createWindow() {
   mainWindow.on('closed', function () {
     console.log('mainWindow closed');
     stopTallyHealthMonitor();
-    mainWindow = null
+    appConfig.mainWindow = null
+    closeWindow(appConfig);
   });
 
   mainMenu = Menu.buildFromTemplate(getBaseMenuTemplate(appConfig));
@@ -114,7 +115,7 @@ const stopTallyHealthMonitor = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  console.log('App is ready');
+  console.log('event:ready');
   localStorage = new Storage();
 
   if (localStorage) {
@@ -131,31 +132,15 @@ app.on('ready', () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  console.log('event:window-all-closed');
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-// app.on('start', () => {
-//   console.log('App started');
-//   throw "Forced error"
-// })
-
 app.on('activate', () => {
+  console.log('event:activate');
   activateWindow(appConfig);
-});
-
-app.on('window-all-closed', ()=> {
-  closeWindow(appConfig);
-});
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  console.log(`BrowserWindow.getAllWindows().length=${BrowserWindow.getAllWindows().length }`);
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
 });
 
 ipcMain.on('tally:ui:ready', (event) => {
