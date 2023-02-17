@@ -1,6 +1,6 @@
 {
   "name": "@glassball/tallymate",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "",
   "main": "src/main.js",
@@ -46,20 +46,9 @@
       "!node_modules/@glassball/tallymate-ui/p*"
     ],
     "mac": {
-      "icon": "./excel.icns",
+      "icon": "./bank.icns",
       "target": [
-        {
-          "target": "default",
-          "arch": [
-            "universal"
-          ]
-        },
-        {
-          "target": "mas",
-          "arch": [
-            "universal"
-          ]
-        },
+
         {
           "target": "mas-dev",
           "arch": [
@@ -69,10 +58,10 @@
       ]
     },
     "dmg": {
-      "icon": "./excel.icns"
+      "icon": "./bank.icns"
     },
     "mas": {
-      "icon": "./excel.icns",
+      "icon": "./bank.icns",
       "identity": "Neeraj Gupta (MP2H676YN6)",
       "entitlements": "./entitlements.mas.plist",
       "entitlementsInherit": "./entitlements.mas.inherit.plist",
@@ -80,7 +69,7 @@
       "provisioningProfile": "embedded.provisionprofile"
     },
     "masDev": {
-      "icon": "./excel.icns",
+      "icon": "./bank.icns",
       "identity": "Apple Development: Neeraj Gupta (995V3K346D)",
       "entitlements": "./entitlements.mas.plist",
       "entitlementsInherit": "./entitlements.mas.inherit.plist",
