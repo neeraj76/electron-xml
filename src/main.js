@@ -10,7 +10,7 @@ const { processRowTally } = require("./spreadsheet/excel_tally");
 
 const { tallyCheckServer, tallyInitServer} = require("@glassball/tally");
 const {getTallyReadOnlyCommands, getTallyCommands, getTallyCommandMap} = require("@glassball/tally");
-const {getBaseMenuTemplate, setSubmenuStatusById, closeWindow} = require("@glassball/electron-menu-base");
+const {getBaseMenuTemplate, closeWindow, activateWindow} = require("@glassball/electron-menu-base/lib/menu");
 const updater = require('./updater');
 
 
@@ -23,12 +23,11 @@ let localStorage;
 
 const appConfig = {
   app,
-  mainWindow,
-  mainMenu,
   server: {
     host: 'localhost',
     port: 9000
-  }
+  },
+  createWindow
 }
 
 
@@ -45,6 +44,7 @@ function createWindow() {
       contextIsolation: false
     },
   });
+  appConfig.mainWindow = mainWindow;
 
   if (isDev) {
     const clientPort = 3000;
@@ -82,6 +82,7 @@ function createWindow() {
 
   mainMenu = Menu.buildFromTemplate(getBaseMenuTemplate(appConfig));
   Menu.setApplicationMenu(mainMenu);
+  appConfig.mainMenu = mainMenu;
 }
 
 const startTallyHealthMonitor = () => {
@@ -141,27 +142,32 @@ app.on('window-all-closed', () => {
 // })
 
 app.on('activate', () => {
+  activateWindow(appConfig);
+});
+
+app.on('window-all-closed', ()=> {
+  closeWindow(appConfig);
+});
+
+app.on('activate', () => {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  console.log(`BrowserWindow.getAllWindows().length=${BrowserWindow.getAllWindows().length }`);
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
 
-app.on('window-all-closed', ()=> {
-  closeWindow(appConfig);
-  mainWindow = null;
-});
-
-
 ipcMain.on('tally:ui:ready', (event) => {
   const server = localStorage.get('server');
   console.log(`tally:ready: ${JSON.stringify(server)}`);
-  mainWindow?.webContents.send('tally:ui:ready', server);
+  appConfig.mainWindow?.webContents.send('tally:ui:ready', server);
 });
 
 ipcMain.on('tally:server:get', (event) => {
   const server = localStorage.get('server');
   console.log(`tally:ready: ${JSON.stringify(server)}`);
-  mainWindow?.webContents.send('tally:server:get', server);
+  appConfig.mainWindow?.webContents.send('tally:server:get', server);
 });
 
 
