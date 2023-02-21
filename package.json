@@ -1,6 +1,7 @@
 {
   "name": "@glassball/tallymate",
-  "version": "0.0.4",
+  "productName": "TallyMate",
+  "version": "0.0.7",
   "private": true,
   "description": "",
   "main": "src/main.js",
@@ -26,7 +27,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "electron": "^23.0.0",
+    "electron": "22.0.1",
     "electron-builder": "^23.6.0"
   },
   "workspaces": {
@@ -48,7 +49,12 @@
     "mac": {
       "icon": "./bank.icns",
       "target": [
-
+        {
+          "target": "mas",
+          "arch": [
+            "universal"
+          ]
+        },
         {
           "target": "mas-dev",
           "arch": [
