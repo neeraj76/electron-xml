@@ -14,6 +14,12 @@ const {getBaseMenuTemplate, closeWindow, activateWindow} = require("@glassball/e
 const updater = require('./updater');
 
 
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
+
+
 let mainMenu;
 let mainWindow;
 

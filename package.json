@@ -1,13 +1,14 @@
 {
   "name": "@glassball/tallymate",
-  "productName": "TallyMate",
+  "productName": "TallyWinMate",
   "version": "0.0.8",
   "private": true,
   "description": "",
   "main": "src/main.js",
   "scripts": {
     "build-installer:m": "electron-builder -m",
-    "build": "npm run build-installer:m",
+    "build-installer:w": "electron-builder -w",
+    "build": "npm run build-installer:w",
     "clean": "rm -rf dist",
     "purge": "rm -rf node_modules",
     "start": "electron ."
@@ -22,6 +23,7 @@
     "date-fns": "^2.29.3",
     "electron-is-dev": "^2.0.0",
     "electron-log": "^5.0.0-beta.16",
+    "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.1.0",
     "electron-updater": "^5.3.0",
     "xlsx": "^0.18.5"
@@ -37,8 +39,8 @@
     ]
   },
   "build": {
-    "appId": "com.glassball.tallymate",
-    "productName": "TallyMate",
+    "appId": "com.glassball.tallywinmate",
+    "productName": "TallyWinMate",
     "copyright": "Neeraj Gupta",
     "files": [
       "src/**",
@@ -81,6 +83,35 @@
       "entitlementsInherit": "./entitlements.mas.inherit.plist",
       "category": "public.app-category.productivity",
       "provisioningProfile": "./development.provisionprofile"
+    },
+
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "./bank.ico",
+      "certificateFile": ".local/ComodoCodeSign.pfx",
+      "certificatePassword": "token@123",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "installerIcon": "./bank.ico",
+      "uninstallerIcon": "./bank.ico",
+      "uninstallDisplayName": "Glassball TallyWinMate",
+      "license": "./app-windows/license.txt",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "neeraj76",
+    "repo": "electron-windows-cpu-usage"
   }
 }
