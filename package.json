@@ -3,7 +3,7 @@
   "productName": "TallyWinMate",
   "version": "0.0.9",
   "private": true,
-  "description": "",
+  "description": "Excel to Tally Application",
   "main": "src/main.js",
   "scripts": {
     "build-installer:m": "electron-builder -m",
@@ -13,7 +13,10 @@
     "purge": "rm -rf node_modules",
     "start": "electron ."
   },
-  "author": "",
+  "author": {
+    "name": "Neeraj Gupta",
+    "email": "neeraj76@yahoo.com"
+  },
   "license": "ISC",
   "dependencies": {
     "@glassball/electron-menu-base": "^0.0.1",
